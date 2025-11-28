@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMap.name }}
+  namespace: {{ .Release.Namespace }}
+data:
+  CM_PORT: "{{ .Values.env.controlManagerPort }}"
+  CM_HOST: {{ .Values.env.controlManagerHost }}
+  DT_PORT: "{{ .Values.env.digitalTwinPort }}"
+  DT_SERVICE_HOST: {{ .Values.env.digitalTwinService }}
+  DT_SERVICE_PORT: "{{ .Values.env.digitalTwinPort }}"
+  PROMETHEUS_URL: "{{ .Values.env.prometheusService }}:{{ .Values.env.prometheusPort }}"
+  PROMQL_WRAPPER_PORT: "{{ .Values.env.promqlWrapperPort }}"
+  PROMQL_WRAPPER_HOST: {{ .Values.env.promqlWrapperService }}
+  PSGC_PORT: "{{ .Values.env.psgcPort }}"
+  PSGC_HOST: {{ .Values.env.psgcService }}
+  SCHEDULER_PORT: "{{ .Values.env.schedulerPort }}"
+  SCHEDULER_HOST: {{ .Values.env.schedulerService }}
+  SC_PORT: "{{ .Values.env.schedulerControllerPort }}"
+  SC_HOST: {{ .Values.env.schedulerControllerService }}
+  REDIS_URL: "{{ .Values.env.redisService }}:{{ .Values.env.redisPort }}"

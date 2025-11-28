@@ -1,0 +1,355 @@
+{
+  "lastUpdated": 1751643751.814504,
+  "vertexpools": [
+    {
+      "id": "1",
+      "vertexpool_labels": {
+        "vertices": "nodes"
+      },
+      "nodes": [
+        {
+          "id": "jetson-agx-orin-2",
+          "name": "jetson-agx-orin-2",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 3.34583333334497,
+            "mem_util": 4.740914493052828,
+            "network_bandwidth_mbps": 0.040879313151041666,
+            "free_disk_gb": 11.382489088,
+            "total_disk_gb": 60.7922176,
+            "cpu_cores": 8,
+            "mem_total": 62800,
+            "power_watts": 5.7615
+          }
+        },
+        {
+          "id": "jetson-agx-orin-3",
+          "name": "jetson-agx-orin-3",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 8.333333333333329,
+            "mem_util": 61.09586381796748,
+            "network_bandwidth_mbps": 0.0470385233561198,
+            "free_disk_gb": 23.76648704,
+            "total_disk_gb": 60.7922176,
+            "cpu_cores": 12,
+            "mem_total": 62800,
+            "power_watts": 29.84325
+          }
+        },
+        {
+          "id": "jetson-nano-10",
+          "name": "jetson-nano-10",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 9.944668511092317,
+            "mem_util": 20.437406504433586,
+            "network_bandwidth_mbps": 0.04482662411399345,
+            "free_disk_gb": 27.917852672,
+            "total_disk_gb": 61.360062464,
+            "cpu_cores": 4,
+            "mem_total": 3963,
+            "power_watts": 1.91975
+          }
+        },
+        {
+          "id": "jetson-nano-3",
+          "name": "jetson-nano-3",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 11.016666666740392,
+            "mem_util": 21.208265586661533,
+            "network_bandwidth_mbps": 0.050627983940972225,
+            "free_disk_gb": 21.25457408,
+            "total_disk_gb": 61.403672576,
+            "cpu_cores": 4,
+            "mem_total": 3964,
+            "power_watts": 1.96575
+          }
+        },
+        {
+          "id": "jetson-nano-5",
+          "name": "jetson-nano-5",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 10.966666666790843,
+            "mem_util": 21.25187966220278,
+            "network_bandwidth_mbps": 0.043985239664713544,
+            "free_disk_gb": 24.285028352,
+            "total_disk_gb": 61.403672576,
+            "cpu_cores": 4,
+            "mem_total": 3964,
+            "power_watts": 1.8635
+          }
+        },
+        {
+          "id": "jetson-nano-6",
+          "name": "jetson-nano-6",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 11.674999999910753,
+            "mem_util": 21.403630830723507,
+            "network_bandwidth_mbps": 0.05268020629882813,
+            "free_disk_gb": 24.345296896,
+            "total_disk_gb": 61.360062464,
+            "cpu_cores": 4,
+            "mem_total": 3963,
+            "power_watts": 1.88725
+          }
+        },
+        {
+          "id": "jetson-nano-9",
+          "name": "jetson-nano-9",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 11.352954901499402,
+            "mem_util": 20.710872686387304,
+            "network_bandwidth_mbps": 0.04212232459577407,
+            "free_disk_gb": 13.656510464,
+            "total_disk_gb": 61.3604352,
+            "cpu_cores": 4,
+            "mem_total": 3964,
+            "power_watts": 1.8565
+          }
+        },
+        {
+          "id": "venit-imac",
+          "name": "venit-imac",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 12.591666666655016,
+            "mem_util": 71.15769620481747,
+            "network_bandwidth_mbps": 1.048547871907552,
+            "free_disk_gb": 45.966819328,
+            "total_disk_gb": 124.896559104,
+            "cpu_cores": 4,
+            "mem_total": 3893,
+            "power_watts": null
+          }
+        },
+        {
+          "id": "ws2",
+          "name": "ws2",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 2.000000000019398,
+            "mem_util": 8.20339994989503,
+            "network_bandwidth_mbps": 0.842699686686198,
+            "free_disk_gb": 768.665960448,
+            "total_disk_gb": 4030.803197952,
+            "cpu_cores": 24,
+            "mem_total": 257584,
+            "power_watts": null
+          }
+        },
+        {
+          "id": "venit-ws1",
+          "name": "venit-ws1",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 0.4354166666841337,
+            "mem_util": 2.8316101354372347,
+            "network_bandwidth_mbps": 0.07991020841271189,
+            "free_disk_gb": 2507.228758016,
+            "total_disk_gb": 4030.803197952,
+            "cpu_cores": 32,
+            "mem_total": 257584,
+            "power_watts": null
+          }
+        }
+      ],
+      "devices": [],
+      "lastUpdated": null
+    },
+    {
+      "id": "2",
+      "vertexpool_labels": null,
+      "nodes": [
+        {
+          "id": "jetson-agx-orin-1",
+          "name": "jetson-agx-orin-1",
+          "system": null,
+          "node_info": {},
+          "metrics": {
+            "util": 3.1499999999747814,
+            "mem_util": 5.97791229370177,
+            "network_bandwidth_mbps": 0.04510956057512288,
+            "free_disk_gb": 12.033245184,
+            "total_disk_gb": 60.7922176,
+            "cpu_cores": 8,
+            "mem_total": 62800,
+            "power_watts": 5.024
+          }
+        }
+      ],
+      "devices": [],
+      "lastUpdated": null
+    },
+    {
+      "id": "14",
+      "vertexpool_labels": {
+        "vertices": "devices",
+        "device-type": "external-service"
+      },
+      "nodes": [],
+      "devices": [
+        {
+          "id": "18",
+          "name": "google",
+          "labels": null,
+          "device_info": {}
+        }
+      ],
+      "lastUpdated": null
+    },
+    {
+      "id": "25",
+      "vertexpool_labels": {
+        "remote": "e4",
+        "vertices": "devices"
+      },
+      "nodes": [],
+      "devices": [
+        {
+          "id": "2",
+          "name": "ecam3",
+          "labels": {
+            "test3": "54"
+          },
+          "device_info": {}
+        },
+        {
+          "id": "3",
+          "name": "ersu3",
+          "labels": {
+            "device": "RSU"
+          },
+          "device_info": {}
+        },
+        {
+          "id": "24",
+          "name": "e4test",
+          "labels": null,
+          "device_info": {}
+        }
+      ],
+      "lastUpdated": null
+    },
+    {
+      "id": "109",
+      "vertexpool_labels": {
+        "devices": "cameras",
+        "vertices": "devices"
+      },
+      "nodes": [],
+      "devices": [
+        {
+          "id": "0",
+          "name": "cam1",
+          "labels": {
+            "device": "camera"
+          },
+          "device_info": {}
+        },
+        {
+          "id": "23",
+          "name": "rsu-e",
+          "labels": null,
+          "device_info": {}
+        }
+      ],
+      "lastUpdated": null
+    },
+    {
+      "id": "1101",
+      "vertexpool_labels": {
+        "vertices": "devices"
+      },
+      "nodes": [],
+      "devices": [
+        {
+          "id": "20",
+          "name": "cam-entry",
+          "labels": null,
+          "device_info": {}
+        },
+        {
+          "id": "21",
+          "name": "cam-intersection",
+          "labels": {
+            "camera": "thermal"
+          },
+          "device_info": {}
+        }
+      ],
+      "lastUpdated": null
+    }
+  ],
+  "links": [
+    {
+      "vertexpool_a_id": "1",
+      "vertexpool_b_id": "1101",
+      "network_delay_ms": 0.4996294415468583,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "1",
+      "vertexpool_b_id": "14",
+      "network_delay_ms": 26.509093104396015,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "2",
+      "vertexpool_b_id": "1101",
+      "network_delay_ms": 0.614745456550736,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "2",
+      "vertexpool_b_id": "14",
+      "network_delay_ms": 26.832584114163183,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "2",
+      "vertexpool_b_id": "25",
+      "network_delay_ms": 142.66414658535118,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "1",
+      "vertexpool_b_id": "1",
+      "network_delay_ms": 0.8946598920592805,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "1",
+      "vertexpool_b_id": "2",
+      "network_delay_ms": 1.2103896592452656,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "2",
+      "vertexpool_b_id": "2",
+      "network_delay_ms": 0.33159697195515037,
+      "lastUpdated": null
+    },
+    {
+      "vertexpool_a_id": "2",
+      "vertexpool_b_id": "1",
+      "network_delay_ms": 1.0772336131776683,
+      "lastUpdated": null
+    }
+  ],
+  "jobs": []
+}

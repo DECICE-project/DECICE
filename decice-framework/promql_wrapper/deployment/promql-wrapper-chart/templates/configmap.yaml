@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promql-json-wrapper-config
+  namespace: {{ .Values.namespace }}
+data:
+  settings.yaml: |
+    log_level: {{ .Values.settings.log_level | quote }}
+    auto_update_dt:
+      enabled: {{ .Values.settings.auto_update_dt.enabled }}
+      frequency_seconds: {{ .Values.settings.auto_update_dt.frequency_seconds }}
+    digital_twin:
+      port: {{ .Values.settings.digital_twin.port }}
+      service: {{ .Values.settings.digital_twin.service | quote }}
+    prometheus:
+      port: {{ .Values.settings.prometheus.port }}
+      service: {{ .Values.settings.prometheus.service | quote }}
+    control_manager:
+      port: {{ .Values.settings.control_manager.port }}
+      service: {{ .Values.settings.control_manager.service | quote }}
+    power_consumption_promql_queries:
+    {{- .Values.settings.power_consumption_promql_queries | toYaml | nindent 6 }}

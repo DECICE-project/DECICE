@@ -1,0 +1,110 @@
+
+{
+    "vertexpools": [
+        {
+            "vertexpool_id": 1,
+            "devices": [
+                {
+                    "id": 1,
+                    "name": "thermal_intersection",
+                    "labels": [
+                        "device_type:camera",
+                        "camera_type:thermal"
+                    ],
+                    "ip": "10.42.0.99"
+                },
+                {
+                    "id": 2,
+                    "name": "thermal_cevizli",
+                    "labels": [
+                        "device_type:camera",
+                        "camera_type:thermal"
+                    ],
+                    "ip": "10.42.0.101"
+                },
+                {
+                    "id": 3,
+                    "name": "dome_intersection",
+                    "labels": [
+                        "device_type:camera",
+                        "camera_type:dome"
+                    ],
+                    "ip": "10.42.0.203"
+                },
+                {
+                    "id": 4,
+                    "name": "dome_cevizli",
+                    "labels": [
+                        "device_type:camera",
+                        "camera_type:dome"
+                    ],
+                    "ip": "10.42.0.204"
+                }
+            ],
+            "nodes": [
+                {
+                    "nodename": "jetson-agx-orin-1",
+                    "ip": "10.42.0.104"
+                },
+                {
+                    "nodename": "jetson-agx-orin-2",
+                    "ip": "10.42.0.59"
+                },
+                {
+                    "nodename": "jetson-agx-orin-3",
+                    "ip": "10.42.0.125"
+                },
+                {
+                    "nodename": "venit-imac",
+                    "ip": "10.52.132.19"
+                },
+                {
+                    "nodename": "ws2",
+                    "ip": "10.42.0.53"
+                }
+            ],
+            "labels": []
+        },
+        {
+            "vertexpool_id": 2,
+            "devices": [],
+            "nodes": [
+                {
+                    "nodename": "jetson-nano-10",
+                    "ip": "10.42.0.102"
+                },
+                {
+                    "nodename": "jetson-nano-3",
+                    "ip": "10.42.0.231"
+                },
+                {
+                    "nodename": "jetson-nano-5",
+                    "ip": "10.42.0.228"
+                },
+                {
+                    "nodename": "jetson-nano-6",
+                    "ip": "10.42.0.142"
+                },
+                {
+                    "nodename": "jetson-nano-7",
+                    "ip": "10.42.0.233"
+                },
+                {
+                    "nodename": "jetson-nano-8",
+                    "ip": "10.42.0.116"
+                },
+                {
+                    "nodename": "jetson-nano-9",
+                    "ip": "10.42.0.174"
+                }
+            ],
+            "labels": []
+        }
+    ],
+    "settings": {
+        "measure_self_pool": true,
+        "self_pool_measurement_interval_seconds": 9999,
+        "vertexpool_measurement_interval_seconds": 1,
+        "measurement_stratagy": "round-robin"
+    }
+}

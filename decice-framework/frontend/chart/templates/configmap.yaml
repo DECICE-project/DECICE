@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: decice-dashboard-env
+  namespace: {{ .Values.namespace }}
+data:
+  .env: |
+    VITE_SERVER_IP={{ .Values.controlMangerPublicIpPort }}
+    VITE_API_IP={{ .Values.frontApiPublicIpPort }}
+    VITE_WATMON_API_IP={{ .Values.watmonApiPublicIpPort }}
+    VITE_GRAFANA_URL={{ .Values.grafanaPublicUrl }}

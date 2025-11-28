@@ -1,0 +1,48 @@
+# App name
+applicationName: control-manager
+
+# Namespace information
+namespace: default
+
+# The number of pods in the deployment
+replicaCount: 1
+
+# Image information
+image:
+  registry: harbor.gwdg.de/decice
+  repository: decice-control-manager
+  tag: test
+  secret: decice-harbor
+  # TODO: imagePullPolicy has to be arranged later for CICD pipeline. It is not a good idea to pull images every time
+  # Images should be pulled if there is any change in the repo.
+  imagePullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  name: control-manager-service
+  type: ClusterIP       # ClusterIP, LoadBalancer, NodePort
+  servicePort: 8000
+  nodePort: 30080       # Optional, only used if type is NodePort
+
+# ConfigMap configuration
+configMap:
+  name: control-manager-config
+
+# Environment variables in ConfigMap
+env:
+  controlManagerHost: 0.0.0.0
+  controlManagerPort: 8000
+  prometheusService: http://prometheus-stack-kube-prom-prometheus
+  prometheusPort: 9090
+  digitalTwinService: digital-twin-service
+  digitalTwinPort: 8010
+  promqlWrapperService: promql-json-wrapper-service
+  promqlWrapperPort: 8050
+  psgcService: glue-service
+  psgcPort: 8040
+  schedulerService: ai-scheduler-service
+  schedulerPort: 8030
+  schedulerControllerService: scheduler-controller-service
+  schedulerControllerPort: 8020
+  redisService: redis://redis-cm-master
+  redisPort: 6379

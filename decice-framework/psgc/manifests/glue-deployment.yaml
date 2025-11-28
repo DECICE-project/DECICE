@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glue-deployment
+  labels:
+    app: decice
+    decice: glue-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: decice
+      decice: glue-pod
+  template:
+    metadata:
+      labels:
+        app: decice
+        decice: glue-pod
+    spec:
+      containers:
+      - name: glue-container
+        image: nginx
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decice-dashboard
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: decice-dashboard
+  template:
+    metadata:
+      labels:
+        app: decice-dashboard
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      containers:
+        - name: dashboard
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          ports:
+            - containerPort: 5173
+          volumeMounts:
+            - name: env-config
+              mountPath: /app/.env
+              subPath: .env
+      volumes:
+        - name: env-config
+          configMap:
+            name: decice-dashboard-env

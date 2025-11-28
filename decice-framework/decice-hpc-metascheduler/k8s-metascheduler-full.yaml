@@ -1,0 +1,653 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metascheduler-full-code
+  namespace: decice
+data:
+  app.py: |
+    # DECICE Meta-Scheduler with Real Pod Creation
+    from fastapi import FastAPI, HTTPException, Depends, Request
+    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    from pydantic import BaseModel
+    from typing import List, Optional, Dict, Any
+    from uuid import UUID, uuid4
+    from datetime import datetime
+    import uvicorn
+    import os
+    import asyncio
+    from kubernetes import client, config
+    import yaml
+
+    app = FastAPI(
+        title="DECICE HPC Meta-Scheduler API",
+        description="Submit and manage HPC jobs through a meta-scheduler with real Kubernetes pod creation",
+        version="1.0.0"
+    )
+
+    security = HTTPBearer()
+
+    # Initialize Kubernetes client
+    try:
+        config.load_incluster_config()
+    except:
+        print("Failed to load in-cluster config, using default")
+    
+    k8s_v1 = client.CoreV1Api()
+    k8s_apps_v1 = client.AppsV1Api()
+
+    # Mock data store for demonstration
+    jobs_store = {}
+
+    class JobSubmissionSchema(BaseModel):
+        name: str
+        image: str
+        schedulerTarget: str
+        resources: Optional[Dict[str, str]] = {"cpu": "100m", "memory": "128Mi"}
+        command: Optional[List[str]] = None
+
+    class JobStatusSchema(BaseModel):
+        jobId: str
+        name: str
+        status: str
+        targetCluster: str
+        creationTimestamp: str
+        podName: Optional[str] = None
+        podStatus: Optional[str] = None
+
+    def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+        if credentials.credentials == "test-token":
+            return "user123"
+        raise HTTPException(status_code=401, detail="Invalid authentication")
+
+    def create_volcano_pod_spec(job_name: str, image: str, command: List[str] = None, resources: Dict = None):
+        """Create Pod spec for Volcano scheduler"""
+        pod_spec = {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "name": f"{job_name}-volcano-pod",
+                "namespace": "decice",
+                "labels": {
+                    "app": "metascheduler-job",
+                    "scheduler": "volcano",
+                    "job-name": job_name
+                },
+                "annotations": {
+                    "scheduling.volcano.sh/queue-name": "default"
+                }
+            },
+            "spec": {
+                "schedulerName": "volcano",
+                "restartPolicy": "Never",
+                "containers": [{
+                    "name": "job-container",
+                    "image": image,
+                    "command": command or ["sleep", "30"],
+                    "resources": {
+                        "requests": resources or {"cpu": "100m", "memory": "128Mi"},
+                        "limits": resources or {"cpu": "200m", "memory": "256Mi"}
+                    }
+                }]
+            }
+        }
+        return pod_spec
+
+    def create_interlink_slurm_pod_spec(job_name: str, image: str, command: List[str] = None, resources: Dict = None):
+        """Create Pod spec for InterLink SLURM scheduler"""
+        pod_spec = {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "name": f"{job_name}-slurm-pod",
+                "namespace": "decice",
+                "labels": {
+                    "app": "metascheduler-job",
+                    "scheduler": "interlink-slurm",
+                    "job-name": job_name
+                },
+                "annotations": {
+                    "slurm.io/job-name": job_name,
+                    "slurm.io/partition": "main"
+                }
+            },
+            "spec": {
+                "schedulerName": "default-scheduler",
+                "nodeSelector": {
+                    "node-type": "slurm-interlink"
+                },
+                "tolerations": [{
+                    "key": "virtual-node.interlink/no-schedule",
+                    "operator": "Equal",
+                    "value": "true",
+                    "effect": "NoSchedule"
+                }],
+                "restartPolicy": "Never",
+                "containers": [{
+                    "name": "job-container",
+                    "image": image,
+                    "command": command or ["sleep", "30"],
+                    "resources": {
+                        "requests": resources or {"cpu": "100m", "memory": "128Mi"},
+                        "limits": resources or {"cpu": "200m", "memory": "256Mi"}
+                    },
+                    "env": [{
+                        "name": "SLURM_JOB_NAME",
+                        "value": job_name
+                    }]
+                }]
+            }
+        }
+        return pod_spec
+
+    async def create_kubernetes_pod(pod_spec: Dict) -> str:
+        """Create a pod in Kubernetes cluster"""
+        try:
+            # Extract the spec and metadata properly
+            metadata = client.V1ObjectMeta(
+                name=pod_spec["metadata"]["name"],
+                namespace=pod_spec["metadata"]["namespace"],
+                labels=pod_spec["metadata"].get("labels", {}),
+                annotations=pod_spec["metadata"].get("annotations", {})
+            )
+            
+            containers = []
+            for container_spec in pod_spec["spec"]["containers"]:
+                container = client.V1Container(
+                    name=container_spec["name"],
+                    image=container_spec["image"],
+                    command=container_spec.get("command"),
+                    resources=client.V1ResourceRequirements(
+                        requests=container_spec.get("resources", {}).get("requests", {}),
+                        limits=container_spec.get("resources", {}).get("limits", {})
+                    ),
+                    env=[client.V1EnvVar(name=env.get("name"), value=env.get("value")) 
+                         for env in container_spec.get("env", [])]
+                )
+                containers.append(container)
+            
+            # Handle tolerations
+            tolerations = []
+            for tol in pod_spec["spec"].get("tolerations", []):
+                toleration = client.V1Toleration(
+                    key=tol.get("key"),
+                    operator=tol.get("operator"),
+                    value=tol.get("value"),
+                    effect=tol.get("effect")
+                )
+                tolerations.append(toleration)
+            
+            spec = client.V1PodSpec(
+                containers=containers,
+                restart_policy=pod_spec["spec"].get("restartPolicy", "Never"),
+                scheduler_name=pod_spec["spec"].get("schedulerName"),
+                node_selector=pod_spec["spec"].get("nodeSelector"),
+                tolerations=tolerations if tolerations else None
+            )
+            
+            pod_body = client.V1Pod(
+                metadata=metadata,
+                spec=spec
+            )
+            
+            result = k8s_v1.create_namespaced_pod(
+                namespace="decice",
+                body=pod_body
+            )
+            return result.metadata.name
+        except Exception as e:
+            print(f"Error creating pod: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to create pod: {str(e)}")
+
+    async def get_pod_status(pod_name: str) -> Dict:
+        """Get pod status from Kubernetes"""
+        try:
+            pod = k8s_v1.read_namespaced_pod(name=pod_name, namespace="decice")
+            return {
+                "phase": pod.status.phase,
+                "conditions": [{"type": c.type, "status": c.status} for c in (pod.status.conditions or [])],
+                "container_statuses": [
+                    {
+                        "name": cs.name,
+                        "ready": cs.ready,
+                        "restart_count": cs.restart_count,
+                        "state": str(cs.state)
+                    } for cs in (pod.status.container_statuses or [])
+                ]
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.get("/", summary="Health Check")
+    async def root():
+        return {"message": "DECICE Meta-Scheduler API with Real Pod Creation", "status": "running", "timestamp": datetime.now().isoformat()}
+
+    @app.get("/health", summary="Health Check")
+    async def health_check():
+        return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+    @app.post("/jobs", response_model=JobStatusSchema, summary="Submit Job with Real Pod Creation")
+    async def submit_job(
+        submission: JobSubmissionSchema,
+        current_user_id: str = Depends(get_current_user)
+    ):
+        job_id = str(uuid4())
+        
+        # Create pod spec based on scheduler target
+        if submission.schedulerTarget == "VOLCANO":
+            pod_spec = create_volcano_pod_spec(
+                job_name=f"{submission.name}-{job_id[:8]}",
+                image=submission.image,
+                command=submission.command,
+                resources=submission.resources
+            )
+        elif submission.schedulerTarget == "INTERLINK_SLURM":
+            # Ensure image is in docker:// format for Singularity compatibility
+            image = submission.image
+            if not image.startswith("docker://"):
+                image = f"docker://{image}"
+            
+            pod_spec = create_interlink_slurm_pod_spec(
+                job_name=f"{submission.name}-{job_id[:8]}",
+                image=image,
+                command=submission.command,
+                resources=submission.resources
+            )
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported scheduler target: {submission.schedulerTarget}")
+        
+        # Create the pod in Kubernetes
+        try:
+            pod_name = await create_kubernetes_pod(pod_spec)
+            
+            job = {
+                "jobId": job_id,
+                "name": submission.name,
+                "status": "SUBMITTED",
+                "targetCluster": submission.schedulerTarget,
+                "creationTimestamp": datetime.now().isoformat(),
+                "userId": current_user_id,
+                "image": submission.image,
+                "podName": pod_name,
+                "podStatus": "Pending"
+            }
+            jobs_store[job_id] = job
+            
+            return JobStatusSchema(**job)
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to submit job: {str(e)}")
+
+    @app.get("/jobs", response_model=List[JobStatusSchema], summary="List Jobs")
+    async def list_jobs(
+        skip: int = 0,
+        limit: int = 100,
+        current_user_id: str = Depends(get_current_user)
+    ):
+        user_jobs = [job for job in jobs_store.values() if job["userId"] == current_user_id]
+        
+        # Update pod statuses
+        for job in user_jobs:
+            if job.get("podName"):
+                pod_status = await get_pod_status(job["podName"])
+                job["podStatus"] = pod_status.get("phase", "Unknown")
+        
+        return [JobStatusSchema(**job) for job in user_jobs[skip:skip + limit]]
+
+    @app.get("/jobs/{job_id}", response_model=JobStatusSchema, summary="Get Job Status")
+    async def get_job(
+        job_id: str,
+        current_user_id: str = Depends(get_current_user)
+    ):
+        if job_id not in jobs_store:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        job = jobs_store[job_id]
+        if job["userId"] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Update pod status
+        if job.get("podName"):
+            pod_status = await get_pod_status(job["podName"])
+            job["podStatus"] = pod_status.get("phase", "Unknown")
+        
+        return JobStatusSchema(**job)
+
+    @app.get("/jobs/{job_id}/pod-details", summary="Get Pod Details")
+    async def get_job_pod_details(
+        job_id: str,
+        current_user_id: str = Depends(get_current_user)
+    ):
+        if job_id not in jobs_store:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        job = jobs_store[job_id]
+        if job["userId"] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        if not job.get("podName"):
+            raise HTTPException(status_code=404, detail="No pod associated with this job")
+        
+        pod_status = await get_pod_status(job["podName"])
+        return {"jobId": job_id, "podName": job["podName"], "podStatus": pod_status}
+
+    async def query_prometheus(query: str):
+        """Query Prometheus for metrics"""
+        import aiohttp
+        prometheus_url = "http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090"
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{prometheus_url}/api/v1/query", params={"query": query}, timeout=10) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get("status") == "success" and data.get("data", {}).get("result"):
+                            return float(data["data"]["result"][0]["value"][1])
+                    return 0.0
+        except Exception as e:
+            print(f"Prometheus query error: {e}")
+            return 0.0
+
+    @app.get("/metrics/load-comparison", summary="Get Load Comparison")
+    async def get_load_comparison(
+        current_user_id: str = Depends(get_current_user)
+    ):
+        """Get detailed load comparison between Volcano and HPC clusters"""
+        try:
+            # Query Volcano metrics
+            volcano_cpu = await query_prometheus('100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)')
+            volcano_memory = await query_prometheus('(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100')
+            volcano_queue_jobs = await query_prometheus('sum(volcano_queue_request_count)')
+            
+            # Query HPC metrics
+            hpc_cpu = await query_prometheus('remote_hpc_cpu_utilization_percent')
+            hpc_memory = await query_prometheus('remote_hpc_memory_utilization_percent')
+            hpc_pending_jobs = await query_prometheus('remote_hpc_jobs_pending')
+            
+            # Calculate load scores (CPU 40% + Memory 40% + Queue 20%)
+            volcano_load = (volcano_cpu * 0.4) + (volcano_memory * 0.4) + (min(volcano_queue_jobs * 10, 100) * 0.2)
+            hpc_load = (hpc_cpu * 0.4) + (hpc_memory * 0.4) + (min(hpc_pending_jobs * 15, 100) * 0.2)
+            
+            load_diff = abs(volcano_load - hpc_load)
+            recommended = "HPC" if hpc_load < volcano_load and load_diff > 15 else "VOLCANO"
+            
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "volcano_load_score": round(volcano_load, 2),
+                "hpc_load_score": round(hpc_load, 2),
+                "load_difference": round(load_diff, 2),
+                "recommendation": recommended,
+                "decision_threshold": 15,
+                "volcano_metrics": {
+                    "cpu_percent": round(volcano_cpu, 2),
+                    "memory_percent": round(volcano_memory, 2),
+                    "queue_jobs": int(volcano_queue_jobs)
+                },
+                "hpc_metrics": {
+                    "cpu_percent": round(hpc_cpu, 2),
+                    "memory_percent": round(hpc_memory, 2),
+                    "pending_jobs": int(hpc_pending_jobs)
+                }
+            }
+        except Exception as e:
+            print(f"Load comparison error: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to get load comparison: {str(e)}")
+
+    @app.get("/metrics/schedulers", summary="Get All Scheduler Metrics")
+    async def get_scheduler_metrics(
+        current_user_id: str = Depends(get_current_user)
+    ):
+        """Get real-time metrics for all schedulers"""
+        try:
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "volcano": {
+                    "cpu_percent": await query_prometheus('100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'),
+                    "memory_percent": await query_prometheus('(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'),
+                    "queue_jobs": await query_prometheus('sum(volcano_queue_request_count)')
+                },
+                "hpc": {
+                    "nodes_total": await query_prometheus('remote_hpc_nodes_total'),
+                    "cpu_percent": await query_prometheus('remote_hpc_cpu_utilization_percent'),
+                    "memory_percent": await query_prometheus('remote_hpc_memory_utilization_percent'),
+                    "jobs_running": await query_prometheus('remote_hpc_jobs_running'),
+                    "jobs_pending": await query_prometheus('remote_hpc_jobs_pending')
+                }
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get metrics: {str(e)}")
+
+    @app.get("/metrics/recommendation", summary="Get Scheduling Recommendation")
+    async def get_scheduling_recommendation(
+        scheduler_target: str = "AUTO",
+        current_user_id: str = Depends(get_current_user)
+    ):
+        """Get intelligent scheduling recommendation based on current cluster loads"""
+        if scheduler_target != "AUTO":
+            return {"recommendation": scheduler_target, "reason": "User specified"}
+        
+        try:
+            comparison = await get_load_comparison(current_user_id)
+            return {
+                "recommendation": comparison["recommendation"],
+                "reason": f"Load difference: {comparison['load_difference']:.1f} points",
+                "timestamp": comparison["timestamp"]
+            }
+        except Exception as e:
+            return {"recommendation": "VOLCANO", "reason": "Default (metrics unavailable)"}
+
+    if __name__ == "__main__":
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+  
+  requirements.txt: |
+    fastapi==0.110.3
+    uvicorn[standard]==0.29.0
+    pydantic==2.7.1
+    kubernetes==30.1.0
+    PyYAML==6.0.1
+    aiohttp==3.9.5
+    
+  entrypoint.sh: |
+    #!/bin/bash
+    echo "🚀 Starting DECICE Meta-Scheduler API with Real Pod Creation..."
+    echo "Installing dependencies..."
+    pip install -r /app/requirements.txt
+    echo "Starting FastAPI server..."
+    python /app/app.py
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metascheduler-full
+  namespace: decice
+  labels:
+    app: metascheduler-full
+    version: v1.0.0
+    component: meta-scheduler
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: metascheduler-full
+  template:
+    metadata:
+      labels:
+        app: metascheduler-full
+        version: v1.0.0
+        component: meta-scheduler
+    spec:
+      serviceAccountName: metascheduler-sa
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - metascheduler-full
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: metascheduler
+        image: python:3.11-slim
+        command: ["/bin/bash", "/app/entrypoint.sh"]
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: PYTHONPATH
+          value: "/app"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 12
+      volumes:
+      - name: app-code
+        configMap:
+          name: metascheduler-full-code
+          defaultMode: 0755
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metascheduler-sa
+  namespace: decice
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: decice
+  name: metascheduler-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: metascheduler-rolebinding
+  namespace: decice
+subjects:
+- kind: ServiceAccount
+  name: metascheduler-sa
+  namespace: decice
+roleRef:
+  kind: Role
+  name: metascheduler-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metascheduler-full-service
+  namespace: decice
+  labels:
+    app: metascheduler-full
+    component: meta-scheduler
+spec:
+  selector:
+    app: metascheduler-full
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+    nodePort: 30081
+    name: http
+  type: NodePort
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: metascheduler-full-hpa
+  namespace: decice
+  labels:
+    app: metascheduler-full
+    component: meta-scheduler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: metascheduler-full
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+      selectPolicy: Max

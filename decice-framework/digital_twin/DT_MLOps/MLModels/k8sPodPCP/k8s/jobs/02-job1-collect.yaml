@@ -1,0 +1,51 @@
+# ===========================================
+# JOB 1: Collect current workload snapshots
+# ===========================================
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: collect-snapshot
+  namespace: energy
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: podpower-read
+      restartPolicy: Never
+      containers:
+        - name: collect
+          image: ghcr.io/mskazemi/k8spodpcp:latest
+          imagePullPolicy: Always
+          args:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "▶ Step 1: Collecting live K8s objects"
+              timeout 30s python3 /app/k8s_collect.py watch \
+                --kinds Deployment Job CronJob Pod \
+                --emit-initial \
+                --suppress-tls-warnings \
+                --output /app/data/in.ndjson || code=$?; code=${code:-0}; if [ "$code" != "0" ] && [ "$code" != "124" ]; then exit "$code"; fi
+
+              echo "▶ Step 2: Fitting or reusing encoder"
+              if [ ! -f /app/data/encoder.joblib ]; then
+                python3 /app/k8s_encode.py fit \
+                  --input /app/data/in.ndjson \
+                  --out /app/data/encoder.joblib \
+                  --no-sbert
+              fi
+
+              echo "▶ Step 3: Transforming features"
+              python3 /app/k8s_encode.py transform \
+                --input /app/data/in.ndjson \
+                --encoder /app/data/encoder.joblib \
+                --out /app/data/features.parquet
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: podpower-data

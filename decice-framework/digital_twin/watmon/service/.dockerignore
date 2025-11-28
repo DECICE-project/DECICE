@@ -1,0 +1,8 @@
+*.pyc
+__pycache__
+.venv
+*.db
+.python-version
+.ruff_cache
+/deployment/dist
+settings.yaml

@@ -1,0 +1,92 @@
+[project]
+# --- Core Project Metadata ---
+# This section defines essential information about the project.
+name = "decice-metascheduler"
+version = "0.1.0"
+description = "Minimum Viable Product API for submitting and managing HPC jobs through the DECICE meta-scheduler."
+authors = [
+    { name = "Your Name", email = "youremail@example.com" },
+]
+# readme = "README.md" # Commented out for Docker build
+requires-python = ">=3.8"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+# --- Dependencies ---
+# These are the packages required for the application to run in production.
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pyyaml>=6.0.2",
+    "sqlalchemy>=2.0.0", 
+    "alembic>=1.13.0", 
+    "python-jose[cryptography]>=3.3.0", # For JWT handling (future use)
+    "passlib[bcrypt]>=1.7.4", # For password hashing (future use)
+    "aiohttp>=3.9.0", # For async HTTP requests to Prometheus
+]
+
+[project.optional-dependencies]
+# --- Development Dependencies ---
+# These packages are only needed for development, testing, and running the local server.
+# Install with `uv pip install -e .[dev]`
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.27.0", # An HTTP client for testing the API
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/decice-metascheduler" # Replace with your repo URL
+Repository = "https://github.com/your-username/decice-metascheduler"
+
+[project.scripts]
+# --- CLI Scripts ---
+# This allows `uv` to create runnable scripts in the virtual environment.
+# While not strictly necessary for this API, it's good practice.
+# Example: metascheduler = "app.main:cli_function"
+
+
+[tool.uv]
+# --- UV Tool Configuration ---
+# This section can be used for uv-specific settings if needed.
+
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+exclude = [
+    "tests/",
+    ".pytest_cache/",
+    ".venv/",
+    "*.egg-info/",
+]
+
+[tool.pytest.ini_options]
+# Configure pytest to find modules correctly
+pythonpath = [
+    "."
+]
+testpaths = [
+    "tests"
+]
+# Add some useful pytest options
+asyncio_mode = "auto"
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]

@@ -1,0 +1,15 @@
+# Exclude git history
+.git
+.gitignore
+
+# Exclude local virtual environment
+.venv/
+venv/
+
+# Exclude IDE and tool caches
+.vscode/
+.pytest_cache/
+__pycache__/
+
+# Exclude local coverage data
+.coverage

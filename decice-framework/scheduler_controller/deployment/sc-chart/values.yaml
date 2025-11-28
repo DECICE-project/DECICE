@@ -1,0 +1,37 @@
+# App name
+applicationName: scheduler-controller
+
+# Namespace information
+namespace: default
+
+# The number of pods in the deployment
+replicaCount: 1
+
+# Image information
+image:
+  registry: harbor.gwdg.de/decice 
+  repository: decice-scheduler-controller
+  tag: test
+  secret: gwdg-harbor-docker
+  imagePullPolicy: Always
+
+# Service configuration
+service:
+  name: scheduler-controller-service  
+  type: ClusterIP
+  servicePort: 8020  
+
+# ConfigMap configuration
+configMap:
+  name: scheduler-controller-config
+
+# Environment variables in ConfigMap
+env:
+  schedulerControllerHost: 0.0.0.0
+  schedulerControllerPort: 8020
+  digitalTwinService: digital-twin-service
+  digitalTwinPort: 8010
+  controlManagerService: control-manager-service
+  controlManagerPort: 8000
+  schedulerService: ai-scheduler-service
+  schedulerPort: 8030

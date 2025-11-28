@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podpower-collector
+  namespace: energy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podpower-collector
+  template:
+    metadata:
+      labels:
+        app: podpower-collector
+    spec:
+      serviceAccountName: podpower-read
+      containers:
+        - name: collector
+          image: ghcr.io/mskazemi/k8spodpcp:latest
+          imagePullPolicy: Always
+          args:
+            - python
+            - /app/k8s_collect.py
+            - watch
+            - --kinds
+            - Deployment Job CronJob
+            - --namespaces
+            - energy
+            - --emit-initial
+            - --post
+            - http://podpower-predict.energy.svc/predict
+            - --suppress-tls-warnings

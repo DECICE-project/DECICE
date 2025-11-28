@@ -1,0 +1,33 @@
+# App name
+applicationName: ai-scheduler
+
+# Namespace information
+namespace: default
+
+# The number of pods in the deployment
+replicaCount: 1
+
+# Image information
+image:
+  registry: harbor.gwdg.de/decice 
+  repository: decice-ai-scheduler
+  tag: test
+  secret: gwdg-harbor-docker
+  imagePullPolicy: Always
+
+# Service configuration
+service:
+  name: ai-scheduler-service  
+  type: ClusterIP
+  servicePort: 8030  
+
+# ConfigMap configuration
+configMap:
+  name: ai-scheduler-config
+
+# Environment variables in ConfigMap
+env:
+  aiSchedulerHost: 0.0.0.0
+  aiSchedulerPort: 8030
+  schedulerControllerService: scheduler-controller-service
+  schedulerControllerPort: 8020

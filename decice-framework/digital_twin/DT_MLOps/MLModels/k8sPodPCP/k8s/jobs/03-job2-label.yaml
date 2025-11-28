@@ -1,0 +1,35 @@
+# ===========================================
+# JOB 2: Build labels from Kepler metrics
+# ===========================================
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: build-labels
+  namespace: energy
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: podpower-read
+      restartPolicy: Never
+      containers:
+        - name: labels
+          image: ghcr.io/mskazemi/k8spodpcp:latest
+          imagePullPolicy: Always
+          command: ["bash", "-lc"]
+          args:
+            - >
+              python3 /app/kepler_labels.py
+              --prom http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
+              --mode job
+              --start 2025-11-03T14:00:00Z
+              --end 2025-11-03T15:00:00Z
+              --out /app/data/labels.parquet
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: podpower-data

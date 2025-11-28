@@ -1,0 +1,14 @@
+namespace: decice
+# controlMangerPublicIpPort is used for user releated endpoints and job uploads
+controlMangerPublicIpPort: "10.42.0.1:30080"
+# frontApiPublicIpPort is used by the Job Board in Home tab for now
+frontApiPublicIpPort: "10.42.0.1:30097"
+# watmonApiPublicIpPort is used by the Network Status tab
+watmonApiPublicIpPort: "10.42.0.1:30098"
+# grafanaPublicUrl sets the Telemetry Dashboard link in sidebar
+grafanaPublicUrl: "http://10.42.0.1:30092"
+image:
+  repository: harbor.gwdg.de/decice/dashboard
+  tag: "latest"
+  pullSecret: gwdg-harbor-docker
+  pullPolicy: Always

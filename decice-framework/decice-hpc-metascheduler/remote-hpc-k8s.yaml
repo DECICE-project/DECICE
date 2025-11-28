@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-hpc-metrics
+  namespace: decice
+  labels:
+    app: remote-hpc-exporter
+spec:
+  ports:
+  - port: 8092
+    name: metrics
+    targetPort: 8092
+  clusterIP: None  # Headless service for external endpoints
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: remote-hpc-metrics
+  namespace: decice
+  labels:
+    app: remote-hpc-exporter
+subsets:
+- addresses:
+  - ip: 192.168.23.3   # guoehi-dev IP where HPC exporter runs
+  ports:
+  - port: 8092
+    name: metrics
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: remote-hpc-monitor
+  namespace: decice
+  labels:
+    app: remote-hpc-exporter
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: remote-hpc-exporter
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics

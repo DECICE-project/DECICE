@@ -1,0 +1,223 @@
+openapi: 3.1.1
+info:
+  title: DECICE HPC Meta-Scheduler API (MVP)
+  version: "0.1.0"
+  description: >
+    Minimum Viable Product API for submitting and managing HPC jobs through a meta-scheduler.
+    This API allows users to submit jobs and track their status. All endpoints are protected 
+    and require a valid JWT Bearer token for authentication.
+security:
+  - BearerAuth: []
+servers:
+  - url: https://decice.hpc.meta/api/v1
+    description: Production Environment
+  - url: http://localhost:8080/api/v1
+    description: Development Environment
+
+paths:
+  /jobs:
+    get:
+      summary: List My Jobs
+      description: |
+        Retrieves a list of jobs submitted by the currently authenticated user.
+        The list is automatically filtered by the user's identity and supports pagination.
+      operationId: listMyJobs
+      parameters:
+        - name: limit
+          in: query
+          description: The maximum number of jobs to return.
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+        - name: offset
+          in: query
+          description: The number of jobs to skip before starting to collect the result set.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: A paginated list of the user's jobs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobListSchema'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      summary: Submit a New Job
+      description: Creates and submits a new job to the meta-scheduler.
+      operationId: submitJob
+      requestBody:
+        description: A JSON object defining the job to be submitted.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobSubmissionSchema'
+      responses:
+        '201':
+          description: Job successfully created and submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusSchema'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /jobs/{jobId}:
+    get:
+      summary: Get Job Status
+      description: |
+        Retrieves the status of a specific job by its ID. 
+        Access is restricted to the user who submitted the job.
+      operationId: getJobStatus
+      parameters:
+        - name: jobId
+          in: path
+          description: The unique identifier of the job.
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Job status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusSchema'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Requires a Bearer token for authentication, which should be obtained from 
+        the federated identity provider (e.g., Keycloak).
+        Include it in the 'Authorization' header: `Authorization: Bearer <JWT>`.
+
+  schemas:
+    JobSubmissionSchema:
+      unevaluatedProperties: false
+      type: object
+      description: Defines the essential properties of a job for submission.
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the job.
+          example: "my-first-simulation"
+        image:
+          type: string
+          description: The container image to be executed.
+          example: "my-registry/my-app:1.0"
+        schedulerTarget:
+          type: string
+          description: The target execution environment for the job.
+          enum: [VOLCANO, INTERLINK_SLURM]
+      required:
+        - name
+        - image
+        - schedulerTarget
+
+    JobStatusSchema:
+      unevaluatedProperties: false
+      type: object
+      description: Represents the current status and details of a job.
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: The unique, system-generated identifier for the job.
+        name:
+          type: string
+          description: The user-provided name of the job.
+        status:
+          type: string
+          enum: [PENDING, RUNNING, COMPLETED, FAILED, UNKNOWN]
+          description: The current execution status of the job.
+        targetCluster:
+          type: string
+          enum: [VOLCANO, INTERLINK_SLURM]
+          description: The cluster type where the job was scheduled to run.
+        creationTimestamp:
+          type: string
+          format: date-time
+          description: The timestamp when the job was submitted.
+      required:
+        - jobId
+        - name
+        - status
+        - creationTimestamp
+
+    JobListSchema:
+      unevaluatedProperties: false
+      type: object
+      description: A paginated list of jobs.
+      properties:
+        total:
+          type: integer
+          description: The total number of jobs available for the user.
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStatusSchema'
+      required:
+        - total
+        - jobs
+
+    ErrorSchema:
+      type: object
+      description: A standard error response payload.
+      properties:
+        code:
+          type: integer
+          description: A specific error code.
+        message:
+          type: string
+          description: A human-readable description of the error.
+      required:
+        - code
+        - message
+
+  responses:
+    BadRequestError:
+      description: Bad Request. The request payload is invalid, malformed, or missing required fields.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorSchema'
+          example:
+            code: 400
+            message: "The request payload is invalid, malformed, or missing required fields."
+    UnauthorizedError:
+      description: Unauthorized. The request lacks valid authentication credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorSchema'
+          example:
+            code: 401
+            message: "Authentication token is missing or invalid."
+    NotFoundError:
+      description: Not Found. The requested resource does not exist or you do not have permission to view it.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorSchema'
+          example:
+            code: 404
+            message: "The requested resource does not exist or you do not have permission to view it."

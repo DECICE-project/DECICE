@@ -1,0 +1,125 @@
+[tool.poetry]
+name = "control-manager"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.118.0"
+sqlalchemy = {extras = ["aiosqlite"], version = "^2.0.27"}
+passlib = "^1.7.4"
+python-jose = "^3.3.0"
+sphinx = {version = "^7.2.6", extras = ["docs"]}
+watchdog = {version = "^4.0.0", extras = ["docs"]}
+myst-parser = {version = "^2.0.0", extras = ["docs"]}
+prometheus-api-client = "^0.5.5"
+pytest-asyncio = "^0.23.5.post1"
+redis = {extras = ["hiredis"], version = "^5.2.1"}
+snakemake = "^9.9.0"
+psycopg = {extras = ["binary"], version = "^3.2.10"}
+httpx = "^0.28.1"
+pydantic = {extras = ["email"], version = "^2.11.9"}
+pydantic-settings = "^2.11.0"
+python-multipart = "^0.0.20"
+uvicorn = "^0.37.0"
+opentelemetry-sdk = "^1.37.0"
+opentelemetry-exporter-otlp = "^1.37.0"
+opentelemetry-instrumentation-logging = "^0.58b0"
+
+[tool.poetry.extras]
+docs = ["sphinx", "watchdog", "myst-parser"]
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+coverage = "^7.4.3"
+isort = "^5.13.2"
+pytest = "^8.0.1"
+testcontainers = {extras = ["postgres", "redis"], version = "^4.13.1"}
+ruff = "^0.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+filterwarnings = "ignore::DeprecationWarning"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "tests/*",
+    "*/__init__.py",
+    "main.py",
+    "abstract_client.py"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.lint]
+ignore = ["E501"]
+
+select = [
+    "C9",
+    "E",
+    "F",
+    "W",
+    "D",
+    "G",
+    "A",
+    "PT",
+    "S",
+    "B",
+    "ANN",
+    "SIM",
+    "I",
+    "N",
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+#fixable = ["A", "B", "C", "D", "E", "F", "..."]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+per-file-ignores = {}
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.11.
+target-version = "py311"
+
+[tool.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.lint.pydocstyle]
+convention = "google"

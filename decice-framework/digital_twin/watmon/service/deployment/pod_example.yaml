@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watmon-service-settings-config
+  namespace: monitoring
+data: # (OPTIONAL)ADJUST prometheus url
+  settings.yaml: |
+    prometheus_url: "http://prometheus-stack-kube-prom-prometheus.monitoring:9090" 
+    network_exporter_label: "agent=network-metric-exporter"
+    api_port: 7997
+    exporter_port: 7987
+    exporter_vertexpools_endpoint: "/vertexpools/"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: watmon-decice-service
+  namespace: monitoring
+  labels:
+    watmon-app: network-vertexpool-service
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: venit-imac # <EDIT this to select the desired node
+  containers:
+  - name: watmon-decice-service
+    image: 10.42.0.53:4888/watmon_decice_service:latest # <EDIT this according to according to registry 
+    workingDir: /watmon_service
+    volumeMounts:
+    - name: settings-volume
+      mountPath: /watmon_service/settings.yaml
+      subPath: settings.yaml
+    - name: db-volume
+      mountPath: /watmon_service/data
+  volumes:
+  - name: settings-volume
+    configMap:
+      name: watmon-service-settings-config
+      items:
+      - key: settings.yaml
+        path: settings.yaml
+  - name: db-volume
+    hostPath:
+      path: /var/local/watmon_decice_service_data
+      type: DirectoryOrCreate

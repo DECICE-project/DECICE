@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: watmon-api-account
+  namespace: monitoring
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: watmon-list-nodes
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: watmon-list-nodes-binding
+subjects:
+- kind: ServiceAccount
+  name: watmon-api-account
+  namespace: monitoring
+roleRef:
+  kind: ClusterRole
+  name: watmon-list-nodes
+  apiGroup: rbac.authorization.k8s.io
+  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: watmon-list-pods
+  namespace: monitoring
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: watmon-list-pods-binding
+  namespace: monitoring
+subjects:
+- kind: ServiceAccount
+  name: watmon-api-account
+  namespace: monitoring
+roleRef:
+  kind: Role
+  name: watmon-list-pods
+  apiGroup: rbac.authorization.k8s.io

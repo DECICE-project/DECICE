@@ -1,0 +1,11 @@
+kubernetes
+pydantic
+pyyaml
+sentence-transformers 
+scikit-learn 
+joblib 
+pyarrow 
+pandas
+fastapi 
+uvicorn
+

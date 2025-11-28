@@ -1,0 +1,12 @@
+{
+  "name": "string",
+  "description": "string",
+  "actor_lr": 0.0003,
+  "critic_lr": 0.001,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "policy_clip": 0.2,
+  "entropy_coefficient": 0.01,
+  "ppo_batch_size": 64,
+  "hidden_layer_size": 128
+}

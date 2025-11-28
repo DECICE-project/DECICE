@@ -1,0 +1,77 @@
+#get all latencies
+(
+    (# node to device latency, matched to include self_vertexpool_id and target_vertexpool_id 
+    label_replace(decice_ping_latency_ms{target_type="device"}, "device_id", "$1", "target_device_id", "(.*)") 
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    * on(device_id) group_left(target_vertexpool_id) 
+    label_replace(decice_device_info , "target_vertexpool_id" , "$1", "vertexpool_id", "(.*)")
+    )
+    OR
+    (# node to node latency, matched to include vertexpool_ids
+    decice_ping_latency_ms{target_type="node"}
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    *on(target_name) group_left(target_vertexpool_id) 
+    label_replace(label_replace(decice_node_info,"target_vertexpool_id","$1","vertexpool_id","(.*)"),"target_name","$1","nodename","(.*)")
+    )
+)
+
+
+#avg by vertexpools , instant vectors
+avg by (target_vertexpool_id,self_vertexpool_id)(
+    (# node to device latency, matched to include self_vertexpool_id and target_vertexpool_id 
+    label_replace(decice_ping_latency_ms{target_type="device"}, "device_id", "$1", "target_device_id", "(.*)") 
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    * on(device_id) group_left(target_vertexpool_id) 
+    label_replace(decice_device_info , "target_vertexpool_id" , "$1", "vertexpool_id", "(.*)")
+    )
+    OR
+    (# node to node latency, matched to include vertexpool_ids
+    decice_ping_latency_ms{target_type="node"}
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    *on(target_name) group_left(target_vertexpool_id) 
+    label_replace(label_replace(decice_node_info,"target_vertexpool_id","$1","vertexpool_id","(.*)"),"target_name","$1","nodename","(.*)")
+    )
+)
+
+#5m avg by vertexpools 
+avg by (target_vertexpool_id,self_vertexpool_id)(
+    (# node to device latency, matched to include self_vertexpool_id and target_vertexpool_id 
+    label_replace(avg_over_time(decice_ping_latency_ms{target_type="device"}[5m]), "device_id", "$1", "target_device_id", "(.*)") 
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    * on(device_id) group_left(target_vertexpool_id) 
+    label_replace(decice_device_info , "target_vertexpool_id" , "$1", "vertexpool_id", "(.*)")
+    )
+    OR
+    (# node to node latency, matched to include vertexpool_ids
+    avg_over_time(decice_ping_latency_ms{target_type="node"}[5m])
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    *on(target_name) group_left(target_vertexpool_id) 
+    label_replace(label_replace(decice_node_info,"target_vertexpool_id","$1","vertexpool_id","(.*)"),"target_name","$1","nodename","(.*)")
+    )
+)
+
+
+#5m avgs on selected nodename ws2 
+(
+    (# node to device latency, matched to include self_vertexpool_id and target_vertexpool_id 
+    label_replace(avg_over_time(decice_ping_latency_ms{target_type="device",nodename="ws2"}[5m]), "device_id", "$1", "target_device_id", "(.*)")
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    * on(device_id) group_left(target_vertexpool_id) 
+    label_replace(decice_device_info , "target_vertexpool_id" , "$1", "vertexpool_id", "(.*)")
+    )
+    OR
+    (# node to node latency, matched to include vertexpool_ids
+    avg_over_time(decice_ping_latency_ms{target_type="node",nodename="ws2"}[5m])
+    * on(nodename) group_left(self_vertexpool_id)
+    label_replace(decice_node_info,"self_vertexpool_id","$1","vertexpool_id","(.*)")
+    *on(target_name) group_left(target_vertexpool_id) 
+    label_replace(label_replace(decice_node_info,"target_vertexpool_id","$1","vertexpool_id","(.*)"),"target_name","$1","nodename","(.*)")
+    )
+)

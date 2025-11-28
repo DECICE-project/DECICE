@@ -1,0 +1,13 @@
+services:
+  ai-scheduler:
+    build: .
+    ports:
+      - "8030:8030"
+    env_file:
+      - ./.env
+    volumes:
+      - ./src:/app/src
+      - ./strategies:/app/strategies
+    working_dir: /app/src
+    command:
+      uvicorn api.api:app --host 0.0.0.0 --port 8030 --reload

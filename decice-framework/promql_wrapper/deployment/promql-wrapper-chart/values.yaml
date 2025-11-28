@@ -1,0 +1,47 @@
+# App name
+applicationName: promql-json-wrapper
+
+# Namespace information
+namespace: decice
+
+# The number of pods in the deployment
+replicaCount: 1
+
+# Image information
+image:
+  registry: harbor.gwdg.de/decice
+  repository: promql-json-wrapper
+  tag: 0.3.5
+  secret: gwdg-harbor-docker
+  imagePullPolicy: Always
+
+# Service configuration
+service:
+  name: promql-json-wrapper-service
+  type: NodePort  # NodePort or ClusterIP
+  servicePort: 8050
+  nodePort: 30050  # Optional: only used if type is NodePort
+
+# settings.yaml configuration
+settings:
+  log_level: "info"
+
+  auto_update_dt:
+    enabled: true
+    frequency_seconds: 30
+
+  digital_twin:
+    port: 8010
+    service: "digital-twin-service.decice"
+
+  prometheus:
+    port: 9090
+    service: "prometheus-stack-kube-prom-prometheus.monitoring"
+
+  control_manager:
+    port: 8000
+    service: "control-manager-service.decice"
+
+  power_consumption_promql_queries:
+    - "avg_over_time(pdu_node_power_watts[2m])"
+    - "avg_over_time(integrated_power_mW{statistic='power'}[2m])/1000"

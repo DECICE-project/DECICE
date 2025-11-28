@@ -1,0 +1,79 @@
+# Python
+# Byte-compiled / optimized / C extension files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.eggs/
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+
+# Secrets
+.env
+
+
+# Testing & Coverage
+# Caches and reports from testing tools
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Profiling data
+*.prof
+*.lprof
+*.cprof
+
+
+# IDEs and Editors
+# JetBrains (PyCharm, etc.)
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Other
+.project
+.pydevproject
+.settings/
+
+
+# Operating System Files
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+
+# Static Analysis
+# Mypy cache
+.mypy_cache/
+
+# Commit Hook
+.pre-commit-config.yaml

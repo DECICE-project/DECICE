@@ -1,0 +1,1 @@
+Room-level GNN with a similar graph structure as the rack-level GNN. Since it has performed significantly worse than the rack-level model, only rack-level GNN has been chosen for the deployment and deployment evaluation (online folder).

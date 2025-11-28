@@ -1,0 +1,34 @@
+# ===========================================
+# JOB 3: Join features and labels
+# ===========================================
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: join-train-rows
+  namespace: energy
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: join
+          image: ghcr.io/mskazemi/k8spodpcp:latest
+          imagePullPolicy: Always
+          args:
+            - python3
+            - /app/join_features_labels.py
+            - --features
+            - /app/data/features.parquet
+            - --labels
+            - /app/data/labels.parquet
+            - --out
+            - /app/data/train_rows.parquet
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: podpower-data

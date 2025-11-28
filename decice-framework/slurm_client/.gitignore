@@ -1,0 +1,29 @@
+# Python
+# Byte-compiled / optimized / C extension files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.eggs/
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Secrets
+.env
+
+# Testing & Coverage
+# Caches and reports from testing tools
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/

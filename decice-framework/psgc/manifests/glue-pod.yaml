@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: glue-pod
+  labels:
+    app: decice
+    decice: glue-pod
+spec:
+  containers:
+    - name: glue-container
+      image: ab54321/glueimage
+      ports:
+      - containerPort: 8000
+  imagePullSecrets: 
+    - name: regcred
+  nodeSelector:
+    location: cloud

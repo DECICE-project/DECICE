@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMap.name }}
+data:
+  DT_PORT: "{{ .Values.env.digitalTwinPort }}"
+  DT_HOST: {{ .Values.env.digitalTwinHost }}
+  SC_PORT: "{{ .Values.env.schedulerControllerPort }}"
+  SC_SERVICE: {{ .Values.env.schedulerControllerService }}
+  PROMQL_WRAPPER_PORT: "{{ .Values.env.promqlWrapperPort }}"
+  PROMQL_WRAPPER_SERVICE: {{ .Values.env.promqlWrapperService }}
+  INFLUXDB_TOKEN: "{{ .Values.env.influxdbToken }}"
+  INFLUXDB_URL: "{{ .Values.env.influxdbUrl }}"
+  INFLUXDB_BUCKET: "{{ .Values.env.influxdbBucket }}"
+  INFLUXDB_ORG: "{{ .Values.env.influxdbOrg }}"

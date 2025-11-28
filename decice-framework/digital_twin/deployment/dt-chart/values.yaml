@@ -1,0 +1,64 @@
+# App name
+applicationName: digital-twin
+
+# The number of pods in the deployment
+replicaCount: 1
+
+# Image information
+image:
+  registry: harbor.gwdg.de/decice 
+  repository: decice-digital-twin
+  tag: 0.2.0
+  secret: gwdg-harbor-docker
+  imagePullPolicy: Always
+
+# Service configuration
+service:
+  name: digital-twin-service  
+  type: NodePort
+  servicePort: 8010
+  nodePort: 30081  
+
+# ConfigMap configuration
+configMap:
+  name: digital-twin-config
+
+# Environment variables in ConfigMap
+env:
+  digitalTwinHost: 0.0.0.0
+  digitalTwinPort: 8010
+  schedulerControllerService: scheduler-controller-service
+  schedulerControllerPort: 8020
+  promqlWrapperService: promql-json-wrapper-service
+  promqlWrapperPort: 8050
+
+  influxdbToken: "influxdb-secret-token" # should match influxdb.adminUser.token
+  influxdbUrl: "http://influxdb-dt" # should match influxdb.fullnameOverride
+  influxdbBucket: "cluster_snapshot" # should match influxdb.adminUser.bucket
+  influxdbOrg: "decice" # should match influxdb.adminUser.organization
+
+influxdb:
+  enabled: true
+  fullnameOverride: influxdb-dt
+
+  adminUser:
+    user: "admin"
+    password: "admindecice"  
+    token: "influxdb-secret-token"
+    organization: "decice"
+    bucket: "cluster_snapshot"
+
+  persistence:
+    enabled: true
+    storageClass: "standard" # use your StorageClass for cluster
+    size: 8Gi
+
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 32086
+    targetPort: 8086
+    annotations: {}
+    labels: {}
+    portName: http
+

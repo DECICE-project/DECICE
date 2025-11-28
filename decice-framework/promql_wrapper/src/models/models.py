@@ -1,0 +1,188 @@
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class Metrics(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    util: Optional[float] = Field(None, ge=0.0, le=100.0)
+    mem_util: Optional[float] = Field(None, ge=0.0, le=100.0)
+    network_bandwidth_mbps: Optional[float] = None
+    free_disk_gb: Optional[float] = None
+    total_disk_gb: Optional[float] = None
+    cpu_cores: Optional[float] = Field(None, ge=0.0)
+    mem_total: Optional[float] = Field(None, ge=0.0)
+    power_watts: Optional[float] = None
+
+
+class Node(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    system: Optional[str] = None
+    node_info: Optional[Dict[str, Any]] = Field(
+        {}, description="Additional information about the node"
+    )
+    metrics: Optional[Metrics] = Field(
+        None,
+        description="Various metrics fields for the current node.",
+        title="Metrics",
+    )
+
+
+class Device(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    labels: Optional[Dict[str, Any]] = Field(
+        None, description="Labels that applies to this device."
+    )
+    device_info: Optional[Dict[str, Any]] = Field(
+        {}, description="Additional information about the device"
+    )
+
+
+class Vertexpool(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: Optional[str] = None
+    vertexpool_labels: Optional[Dict[str, Any]] = Field(
+        None, description="Additional information about the node"
+    )
+    nodes: Optional[List[Node]] = Field(
+        [], description="Array of nodes within a vertexpool"
+    )
+    devices: Optional[List[Device]] = Field(
+        [], description="Array of devices within this Vertexpool"
+    )
+    lastUpdated: Optional[float] = Field(
+        None, description="When was this data last updated, in epoch time .", ge=0.0
+    )
+
+
+class Link(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    vertexpool_a_id: Optional[str] = Field(
+        None, description="id of the first vertexpool."
+    )
+    vertexpool_b_id: Optional[str] = Field(
+        None, description="id of the second vertexpool."
+    )
+    network_delay_ms: Optional[float] = Field(
+        None,
+        description="Network delay of Link in milliseconds between two vertexpools",
+    )
+    lastUpdated: Optional[float] = Field(
+        None, description="When was this data last updated, in epoch time .", ge=0.0
+    )
+
+
+class Policy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    required_labels: Optional[List[str]] = Field(
+        [],
+        description="Labels that must be set on nodes or vertexpools for this pod to schedule on them.",
+    )
+    rejected_labels: Optional[List[str]] = Field(
+        [],
+        description="Labels that must not be set on nodes or vertexpools for this pod to schedule on them.",
+    )
+    prefered_labels: Optional[List[str]] = Field(
+        [],
+        description="Labels that should be set on nodes or vertexpools for this pod to schedule on them.",
+    )
+    retracted_labels: Optional[List[str]] = Field(
+        [],
+        description="Labels that should not be set on nodes or vertexpools for this pod to schedule on them.",
+    )
+
+
+class Pod(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: Optional[str] = Field(None, description="Pods id")
+    name: Optional[str] = Field(None, description="Pods name")
+    scheduled: Optional[bool] = Field(
+        None, description="True if pod is scheduled else False"
+    )
+    restarts: Optional[int] = Field(
+        None, description="How many times this pod is restarted"
+    )
+    running_since: Optional[str] = Field(
+        None, description="Timestamp of pod's uninterrupted runtime"
+    )
+    status: Optional[str] = Field(None, description="Status of the pod")
+    namespace: Optional[str] = Field(None, description="Namespace of the pod")
+    info: Optional[Dict[str, Any]] = Field(
+        None, description="Additional information about the pod"
+    )
+    policies: Optional[List[Policy]] = Field(
+        [],
+        description="Policies that determine what labels to consider when scheduling this pod.",
+    )
+    node_id: Optional[str] = Field(
+        None, description="Node id that this Pod is hosted in"
+    )
+    nodename: Optional[str] = Field(
+        None, description="Pods nodename , if it is assigned to one"
+    )
+    job_id: Optional[str] = Field(None, description="Pods job id")
+
+
+class Weight(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    models_name: Optional[str] = None
+    models_weight: Optional[float] = Field(None, ge=0.0, le=100.0)
+
+
+class Profile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: Optional[str] = None
+    weights: Optional[List[Weight]] = Field(
+        [],
+        description="Weights to calculate the final score for a node from the model scores.",
+    )
+
+
+class Job(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: Optional[str] = None
+    pods: Optional[List[Pod]] = Field(
+        [], description="Pods that may run on the cluster."
+    )
+    profile: Optional[Profile] = Field(
+        None, description="Represents a weighting of model scores.", title="Profile"
+    )
+    lastUpdated: Optional[float] = Field(
+        None, description="When was this data last updated, in epoch time .", ge=0.0
+    )
+
+
+class DeciceDigitalTwin(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    lastUpdated: Optional[float] = Field(
+        None, description="When was this data last updated, in epoch time .", ge=0.0
+    )
+    vertexpools: Optional[List[Vertexpool]] = Field(
+        [], description="Array of Vertexpools in the cluster."
+    )
+    links: Optional[List[Link]] = Field(
+        [], description="Links that connect two vertexpools"
+    )
+    jobs: Optional[List[Job]] = Field(
+        [], description="Jobs that may run on the cluster"
+    )
+    cluster_info: Optional[Dict[str, Any]] = Field(
+        {}, description="Optional additional information about the cluster"
+    )

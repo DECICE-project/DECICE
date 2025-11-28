@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: watmon-decice-network-exporter-cloud
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      agent: network-metric-exporter
+  template:
+    metadata:
+      labels:
+        agent: network-metric-exporter
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/edge
+                operator: DoesNotExist
+      containers:
+      - name: n-exporter
+        image: 10.42.0.53:4888/watmon_decice_network_exporter_cloud # <EDIT according to registery
+        env:
+        - name: NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: watmon-decice-network-exporter-edge
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      agent: network-metric-exporter
+  template:
+    metadata:
+      labels:
+        agent: network-metric-exporter
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/edge
+                operator: Exists
+      containers:
+      - name: n-exporter
+        image: 10.42.0.53:4888/watmon_decice_network_exporter_edge # <EDIT according to registery
+        env:
+        - name: NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: decice-network-exporter-service
+  namespace: monitoring
+  labels:
+    service: network-metric-exporter
+spec:
+  selector:
+    agent: network-metric-exporter
+  ports:
+  - name: network-exporter-port
+    port: 7987
+    protocol: TCP
+    targetPort: 7987
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: prometheus-stack
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: network-exporter-service-monitor  
+    app.kubernetes.io/version: 1.7.0
+    jobLabel: decice-network-metrics # job name
+    release: prometheus-stack
+  name: network-exporter-service-monitor  
+  namespace: monitoring #deploy ServiceMonitor in the same namespace as prometheus
+spec:  
+  endpoints:
+  - port: network-exporter-port # use the named port
+    scheme: http
+  jobLabel: jobLabel
+  # namespaceSelector: 
+  #         any: true #discover services in all namespace not just monitoring
+  selector:
+    matchLabels:
+      service: network-metric-exporter #select endpoint discovery service

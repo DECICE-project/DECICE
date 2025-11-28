@@ -1,0 +1,20 @@
+{
+    "namespace": "kubeintellect",
+    "workload_kind": "Deployment",
+    "workload_name": "myapp",
+    "labels": {},
+    "annotations": {},
+    "containers": [
+      {
+        "name": "c",
+        "image": "nginx",
+        "req_cpu_mcpu": 100,
+        "req_mem_mib": 128
+      }
+    ],
+    "init_container_count": 0,
+    "sidecar_count": 0,
+    "volume_types": [],
+    "gpu_count": 0
+  }
+  

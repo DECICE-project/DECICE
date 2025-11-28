@@ -1,0 +1,7 @@
+apiVersion: v2
+name: promql-wrapper-chart
+description: A Helm chart for Prometheus JSON Wrapper
+
+type: application
+version: 0.3.0
+appVersion: "0.3.5"

@@ -1,0 +1,12 @@
+**/.venv
+**/*.egg-info
+**/*.pyc
+**/__pycache__
+build/
+**/dist
+**/scratch/*
+configs/nodes.csv
+.python-version
+/influxdb_data
+.env
+start.sh

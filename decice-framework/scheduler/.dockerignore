@@ -1,0 +1,6 @@
+.gitignore
+venv/
+deployment/
+visualizations/
+results_model_20240922.inf
+__pycache__/

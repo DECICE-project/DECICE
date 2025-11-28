@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watmon-decice-service
+  namespace: monitoring
+  labels:
+    watmon-app: network-vertexpool-service
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      watmon-app: network-vertexpool-service
+  template:
+    metadata:
+      labels:
+        watmon-app: network-vertexpool-service
+    spec:
+      serviceAccountName: watmon-api-account
+      imagePullSecrets:
+      - name: "{{ .Values.secret }}"
+      nodeSelector:
+        kubernetes.io/hostname: "{{ .Values.VertexpoolService.nodeSelector }}"
+      containers:
+      - name: watmon-decice-service
+        image: "{{ .Values.VertexpoolService.image.registry }}/{{ .Values.VertexpoolService.image.repository }}:{{ .Values.VertexpoolService.image.tag }}"
+        imagePullPolicy: "{{ .Values.VertexpoolService.image.pullPolicy }}"
+        workingDir: /watmon_service
+        volumeMounts:
+        - name: settings-volume
+          mountPath: /watmon_service/settings.yaml
+          subPath: settings.yaml
+        - name: db-volume
+          mountPath: /watmon_service/data
+      volumes:
+      - name: settings-volume
+        configMap:
+          name: watmon-service-settings-config
+          items:
+          - key: settings.yaml
+            path: settings.yaml
+      - name: db-volume
+        hostPath:
+          path: "{{ .Values.VertexpoolService.hostDatabaseDirectoryPath }}"
+          type: DirectoryOrCreate

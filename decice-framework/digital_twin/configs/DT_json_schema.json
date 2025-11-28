@@ -1,0 +1,332 @@
+{
+    "$id":"https://decice.eu/data/schema",
+    "$schema":"https://json-schema.org/draft/2020-12/schema",
+    "title":"Decice Digital Twin",
+    "description":"Data handled by the DECICE Digital Twin that represents the managed system at a point in time",
+    "type":"object",
+    "additionalProperties":false,
+    "properties":{
+        "lastUpdated": {
+        "description": "When was this data last updated, in epoch time .",
+        "type": "number",
+        "minimum": 0
+        },
+        "vertexpools":{
+            "description":"Array of Vertexpools in the cluster.",
+            "type":"array",
+            "default":[],
+            "items":{
+                "type":"object",
+                "additionalProperties":false,
+                "title": "Vertexpool",
+                "description":"A group of nodes and devices in the same network of the cluster.",
+                "properties":{
+                    "id":{
+                        "type":"string"
+                    },
+                    "vertexpool_labels":{
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Additional information about the node"
+                    },
+                    "nodes":{
+                        "type":"array",
+                        "description":"Array of nodes within a vertexpool",
+                        "default": [],
+                        "items":{
+                            "title":"Node",
+                            "type":"object",
+                            "additionalProperties":false,
+                            "description":"A node within a vertexpool",
+                            "properties":{
+                                "id":{
+                                    "type":"string"
+                                },
+                                "name":{
+                                    "type":"string"
+                                },
+                                "system":{
+                                    "type":"string"
+                                },
+                                "node_info": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "description": "Additional information about the node",
+                                    "default": {}
+                                },
+                                "metrics":{
+                                    "title":"Metrics",
+                                    "type":"object",
+                                    "additionalProperties":false,
+                                    "description":"Various metrics fields for the current node.",
+                                    "properties":{
+                                        "util":{
+                                            "type":"number",
+                                            "minimum": 0,
+                                            "maximum": 100
+                                        },
+                                        "mem_util":{
+                                            "type":"number",
+                                            "minimum": 0,
+                                            "maximum": 100
+                                        },
+                                        "network_bandwidth_mbps": {
+                                            "type": "number"
+                                        },
+                                        "free_disk_gb": {
+                                            "type": "number"
+                                        },
+                                        "total_disk_gb": {
+                                            "type": "number"
+                                        },
+                                        "cpu_cores":{
+                                            "type":"number",
+                                            "minimum": 0
+                                        },
+                                        "mem_total":{
+                                            "type":"number",
+                                            "minimum": 0
+                                        },
+                                        "power_watts":{
+                                            "type":"number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "devices":{
+                        "type":"array",
+                        "default": [],
+                        "description":"Array of devices within this Vertexpool",
+                        "items":{
+                            "title":"Device",
+                            "type":"object",
+                            "additionalProperties":false,
+                            "description":"A device within a Vertexpool",
+                            "properties":{
+                                "id":{
+                                    "type":"string"
+                                },
+                                "name":{
+                                    "type":"string"
+                                },
+                                "labels":{
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "description":"Labels that applies to this device."
+                                },
+                                "device_info": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "description": "Additional information about the device",
+                                    "default": {}
+                                }
+                            }
+                        }
+
+                    },
+                    "lastUpdated": {
+                        "description": "When was this data last updated, in epoch time .",
+                        "type": "number",
+                        "minimum": 0
+                    }
+                }
+            }
+        },
+        "links":{
+            "type":"array",
+            "default": [],
+            "description":"Links that connect two vertexpools",
+            "items":{
+                "type":"object",
+                "additionalProperties":false,
+                "title": "Link",
+                "description":"A network link that connects two vertexpools",
+                "properties":{
+                    "vertexpool_a_id":{
+                        "type":"string",
+                        "description":"id of the first vertexpool."
+                    },
+                    "vertexpool_b_id":{
+                        "type":"string",
+                        "description":"id of the second vertexpool."
+                    },
+                    "network_delay_ms": {
+                        "type": "number",
+                        "description": "Network delay of Link in milliseconds between two vertexpools"
+                    },
+                    "lastUpdated": {
+                        "description": "When was this data last updated, in epoch time .",
+                        "type": "number",
+                        "minimum": 0
+                    }
+                }
+
+
+            }
+        },
+        "jobs":{
+            "type":"array",
+            "default": [],
+            "description":"Jobs that may run on the cluster",
+            "items":{
+                "title":"Job",
+                "type":"object",
+                "additionalProperties":false,
+                "description":"A job that may run on the cluster.",
+                "properties":{
+                    "id":{
+                        "type":"string"
+                    },
+                    "pods":{
+                        "type":"array",
+                        "default": [],
+                        "description":"Pods that may run on the cluster.",
+                        "items":{
+                            "title":"Pod",
+                            "type":"object",
+                            "additionalProperties":false,
+                            "description":"One or more containers that may run together on a node.",
+                            "properties":{
+                                "id":{
+                                    "type":"string",
+                                    "description":"Pods id"
+                                },
+                                "name":{
+                                    "type":"string",
+                                    "description":"Pods name"
+                                },
+                                "scheduled":{
+                                    "type": "boolean",
+                                    "description":"True if pod is scheduled else False"
+                                },
+                                "restarts":{
+                                    "type": "integer",
+                                    "description":"How many times this pod is restarted"
+                                },
+                                "running_since":{
+                                    "type": "string",
+                                    "description":"Timestamp of pod's uninterrupted runtime"
+                                },
+                                "status":{
+                                    "type": "string",
+                                    "description": "Status of the pod"
+                                },
+                                "namespace":{
+                                    "type": "string",
+                                    "description": "Namespace of the pod"
+                                },
+                                "info": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "description": "Additional information about the pod"
+                                },
+                                "policies":{
+                                    "type":"array",
+                                    "default": [],
+                                    "description":"Policies that determine what labels to consider when scheduling this pod.",
+                                    "items":{
+                                        "title":"Policy",
+                                        "type":"object",
+                                        "additionalProperties":false,
+                                        "description":"Policy that determines what labels to consider when scheduling this pod.",
+                                        "properties":{
+                                            "required_labels":{
+                                                "type":"array",
+                                                "default": [],
+                                                "description":"Labels that must be set on nodes or vertexpools for this pod to schedule on them.",
+                                                "items":{
+                                                    "type":"string"
+                                                }
+                                            },
+                                            "rejected_labels":{
+                                                "type":"array",
+                                                "default": [],
+                                                "description":"Labels that must not be set on nodes or vertexpools for this pod to schedule on them.",
+                                                "items":{
+                                                    "type":"string"
+                                                }
+                                            },
+                                            "prefered_labels":{
+                                                "type":"array",
+                                                "default": [],
+                                                "description":"Labels that should be set on nodes or vertexpools for this pod to schedule on them.",
+                                                "items":{
+                                                    "type":"string"
+                                                }
+                                            },
+                                            "retracted_labels":{
+                                                "type":"array",
+                                                "default": [],
+                                                "description":"Labels that should not be set on nodes or vertexpools for this pod to schedule on them.",
+                                                "items":{
+                                                    "type":"string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "node_id":{
+                                    "type":"string",
+                                    "description":"Node id that this Pod is hosted in"
+                                },
+                                "nodename":{
+                                    "type":"string",
+                                    "description":"Pods nodename , if it is assigned to one"
+                                },
+                                "job_id":{
+                                    "type":"string",
+                                    "description":"Pods job id"
+                                }
+                            }
+
+                            }
+                    },
+                    "profile":{
+                        "title":"Profile",
+                        "type":"object",
+                        "additionalProperties":false,
+                        "description":"Represents a weighting of model scores.",
+                        "properties":{
+                            "name":{
+                                "type":"string"
+                            },
+                            "weights":{
+                                "type":"array",
+                                "default": [],
+                                "description":"Weights to calculate the final score for a node from the model scores.",
+                                "items":{
+                                    "title":"Weight",
+                                    "type":"object",
+                                    "additionalProperties":false,
+                                    "properties":{
+                                        "models_name":{
+                                            "type":"string"
+                                        },
+                                        "models_weight":{
+                                            "type":"number",
+                                            "minimum": 0,
+                                            "maximum": 100
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lastUpdated": {
+                        "description": "When was this data last updated, in epoch time .",
+                        "type": "number",
+                        "minimum": 0
+                    }
+                }
+            }
+        },
+        "cluster_info": {
+            "description": "Optional additional information about the cluster",
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+        }
+    }
+}

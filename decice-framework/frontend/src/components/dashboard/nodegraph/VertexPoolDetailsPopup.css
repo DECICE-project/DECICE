@@ -1,0 +1,171 @@
+/* Custom popup styling */
+
+.vertex-pool-popup {
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.vertex-pool-popup-content {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    min-width: 800px !important;
+    min-height: 400px !important;
+}
+
+.vertex-pool-popup-overlay {
+    background: rgba(0, 0, 0, 0.25) !important;
+}
+
+
+/* Labels container */
+
+.labels-container {
+    min-height: 200px;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dark .labels-container {
+    background-color: rgba(17, 24, 39, 0.7);
+    border-color: rgba(75, 85, 99, 1);
+}
+
+
+/* Grid layout */
+
+.labels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+
+/* Label item styling */
+
+.label-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .label-item {
+    background-color: rgba(31, 41, 55, 0.7);
+    border-color: rgba(75, 85, 99, 1);
+}
+
+.label-item:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .label-item:hover {
+    background-color: rgba(31, 41, 55, 0.9);
+}
+
+.label-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #111827;
+}
+
+.dark .label-content {
+    color: #e5e7eb;
+}
+
+.label-key {
+    font-weight: 500;
+    color: #111827;
+}
+
+.dark .label-key {
+    color: #e5e7eb;
+}
+
+.label-separator {
+    color: #6b7280;
+}
+
+.dark .label-separator {
+    color: #9ca3af;
+}
+
+.label-value {
+    color: #4b5563;
+}
+
+.dark .label-value {
+    color: #9ca3af;
+}
+
+.label-delete {
+    color: #6b7280;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.dark .label-delete {
+    color: #9ca3af;
+}
+
+.label-delete:hover {
+    color: #dc2626;
+    opacity: 1;
+    background-color: #fee2e2;
+}
+
+.dark .label-delete:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+
+/* Custom scrollbar styling */
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f9fafb;
+    border-radius: 3px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 3px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}

@@ -1,0 +1,2 @@
+The dataset for the experimental evaluation is publically available on Zenodo: https://zenodo.org/record/7541722
+Download and extract the raw data in this folder with the tar "xfv filename.tar" command. After completing the extraction, delete the compressed files from the directory.

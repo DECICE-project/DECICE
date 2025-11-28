@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "digital_twin"
+version = "0.2.0"
+authors=[]
+description = "Digital Twin prototype for the DECICE framework"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic="2.6.4"
+pydantic_core="2.16.3"
+pydantic_settings="2.1.0"
+typing_extensions="4.8.0"
+uvicorn="0.23.2"
+requests="2.31.0"
+jsonschema="4.21.1"
+fastapi="0.110.0"
+influxdb-client="1.41.0"
+datamodel-code-generator = "^0.25.5"
+ruff = "^0.3.5"
+pytimeparse = "^1.1.8"
+
+[tool.poetry.extras]
+dev = ["datamodel-code-generator"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.project.urls]
+"Homepage" = "https://www.decice.eu/"
+
+[tool.ruff]
+line-length = 120
+

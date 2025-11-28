@@ -1,0 +1,8 @@
+prometheus_url: "http://10.42.0.2:30090"
+network_exporter_label: "agent=network-metric-exporter"
+api_port: 7997
+exporter_port: 7987
+exporter_vertexpools_endpoint: "/vertexpools/"
+
+promql:
+  network_delay_range_selector: "1m"

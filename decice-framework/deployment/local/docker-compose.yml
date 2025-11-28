@@ -1,0 +1,215 @@
+services:
+  # ===================================================================
+  #  Backing Services
+  # ===================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: decice_postgres
+    network_mode: host
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-youruser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-yourpassword}
+      - POSTGRES_DB=${POSTGRES_DB:-control_manager_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    container_name: decice_redis
+    network_mode: host
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    ports: ["9000:9000", "9001:9001"]
+    network_mode: host
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_NOTIFY_WEBHOOK_ENABLE_psgc: ${MINIO_NOTIFY_WEBHOOK_ENABLE_psgc}
+      MINIO_NOTIFY_WEBHOOK_ENDPOINT_psgc: ${MINIO_NOTIFY_WEBHOOK_ENDPOINT_psgc}
+    volumes: ["psgc_minio_data:/data"]
+    command: server /data --console-address ":9001"
+
+  minio-setup:
+    image: minio/mc
+    container_name: decice_minio_setup
+    network_mode: host
+    depends_on: [minio, psgc]
+    env_file: [".env"]
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
+    volumes: ["./scripts:/scripts"]
+    entrypoint: /bin/sh
+    command: -c "sh /scripts/init-minio.sh"
+    restart: "no"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: decice_prometheus
+    network_mode: host
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  influxdb:
+    image: influxdb:2.7.1
+    container_name: decice_influxdb
+    network_mode: host
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    ports:
+      - "8086:8086"
+
+
+  # ===================================================================
+  #  Seeding Service
+  # ===================================================================
+  control-manager-seeder:
+    build:
+      context: ../../control_manager
+    container_name: decice_cm_seeder
+    network_mode: host
+    depends_on: [control-manager]
+    env_file: [.env]
+    command: >
+      sh -c "
+        echo 'Seeder: Running seed script...' &&
+        sleep 3 &&
+        cd /app/src &&
+        PYTHONPATH=. python -m scripts.seed
+      "
+    restart: "no"
+
+  metrics-exporter:
+    build:
+      context: ../../prom-json-wrapper
+    container_name: decice_metrics_seeder
+    network_mode: host
+    depends_on:
+      - control-manager
+    volumes:
+      - ./emulate.json:/app/emulate.json:ro
+    command: >
+      sh -c "
+        echo 'Metrics: Running metrics exporter script...' &&
+        cd /app/src &&
+        PYTHONPATH=. python -m scripts.metrics_exporter /app/emulate.json
+      "
+    restart: "no"
+
+  # ===================================================================
+  #  Visualization Service
+  # ===================================================================
+  tensorboard:
+      image: tensorflow/tensorflow:latest
+      container_name: decice_tensorboard
+      network_mode: host
+      depends_on: [scheduler]
+      # We map the host folder containing models to the container
+      volumes:
+        - ./scheduler_data:/data_mount
+      # Point logdir to the specific models folder inside the mount
+      command: tensorboard --logdir /data_mount/models --host 0.0.0.0 --port 6006
+      restart: unless-stopped
+
+
+  # ===================================================================
+  #  Application Microservices
+  # ===================================================================
+  control-manager:
+    build:
+      context: ../../control_manager
+    container_name: decice_control_manager
+    network_mode: host
+    depends_on: [postgres, redis]
+    env_file: [.env]
+    environment:
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn main:app --host ${CM_HOST} --port ${CM_PORT}
+
+  psgc:
+    build:
+      context: ../../psgc/decice-wp4/integration/glue_code
+    container_name: decice_psgc
+    network_mode: host
+    depends_on: [redis, minio, control-manager]
+    volumes:
+      - ~/.kube:/home/appuser/.kube:ro
+      - ~/.minikube:/home/flix/.minikube:ro
+    env_file: [.env]
+    environment:
+      - KUBECONFIG=/home/appuser/.kube/config
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn api:app --host ${PSGC_HOST} --port ${PSGC_PORT}
+
+  prom-json-wrapper:
+    build:
+      context: ../../prom-json-wrapper
+    container_name: decice_prom_wrapper
+    network_mode: host
+    depends_on: [prometheus]
+    env_file: [.env]
+    environment:
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn api:app --host ${PROMQL_WRAPPER_HOST} --port ${PROMQL_WRAPPER_PORT}
+
+  scheduler-controller:
+    build:
+      context: ../../scheduler_controller
+    container_name: decice_scheduler_controller
+    network_mode: host
+    env_file: [.env]
+    environment:
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn api:app --host ${SC_HOST} --port ${SC_PORT}
+
+  scheduler:
+    build:
+      context: ../../IntegratedAIScheduler
+    container_name: decice_scheduler
+    network_mode: host
+    env_file: [.env]
+    environment:
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    volumes:
+      - ./scheduler_data:/app/data
+    command: uvicorn api.api:app --host ${SCHEDULER_HOST} --port ${SCHEDULER_PORT}
+
+  digital-twin:
+    build:
+      context: ../../digital_twin/digital_twin
+      dockerfile: deployment/local/Dockerfile
+    container_name: decice_digital_twin
+    network_mode: host
+    depends_on: [influxdb]
+    env_file: [.env]
+    environment:
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn main:app --host ${DT_HOST} --port ${DT_PORT}
+
+  # ===================================================================
+  # Volumes
+  # ===================================================================
+volumes:
+  postgres_data:
+  influxdb_data:
+  influxdb_config:
+  psgc_minio_data:

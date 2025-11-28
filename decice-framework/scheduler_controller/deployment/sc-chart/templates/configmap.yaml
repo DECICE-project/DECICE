@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMap.name }}
+  namespace: {{ .Values.namespace }}
+data:
+  SC_PORT: "{{ .Values.env.schedulerControllerPort }}"
+  SC_HOST: {{ .Values.env.schedulerControllerHost }}
+  DT_PORT: "{{ .Values.env.digitalTwinPort }}"
+  DT_SERVICE: {{ .Values.env.digitalTwinService }}
+  SCHEDULER_PORT: "{{ .Values.env.schedulerPort }}"
+  SCHEDULER_SERVICE: {{ .Values.env.schedulerService }}
+  CM_PORT: "{{ .Values.env.controlManagerPort }}"
+  CM_SERVICE: {{ .Values.env.controlManagerService }}

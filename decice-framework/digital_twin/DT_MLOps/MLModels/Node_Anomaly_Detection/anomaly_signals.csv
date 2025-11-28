@@ -1,0 +1,253 @@
+TCN,LSTM,CNN,Z-Score,ARIMA,Isolation Forest,One-Class SVM
+"                     anomaly
+datetime                    
+2024-11-04 12:18:02    False
+2024-11-04 12:18:07    False
+2024-11-04 12:18:12    False
+2024-11-04 12:18:17    False
+2024-11-04 12:18:22    False
+...                      ...
+2024-11-04 12:26:52    False
+2024-11-04 12:26:57    False
+2024-11-04 12:27:02    False
+2024-11-04 12:27:07    False
+2024-11-04 12:27:12    False
+
+[111 rows x 1 columns]","datetime
+2024-11-04 12:17:57     True
+2024-11-04 12:18:02    False
+2024-11-04 12:18:07    False
+2024-11-04 12:18:12    False
+2024-11-04 12:18:17    False
+                       ...  
+2024-11-04 12:26:52     True
+2024-11-04 12:26:57     True
+2024-11-04 12:27:02     True
+2024-11-04 12:27:07    False
+2024-11-04 12:27:12    False
+Name: anomaly, Length: 112, dtype: bool","[False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False  True  True  True  True  True  True
+ False False False False False False False False False  True False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False]","datetime
+2024-11-04 12:17:12    0
+2024-11-04 12:17:17    0
+2024-11-04 12:17:22    0
+2024-11-04 12:17:27    0
+2024-11-04 12:17:32    0
+                      ..
+2024-11-04 12:26:52    0
+2024-11-04 12:26:57    0
+2024-11-04 12:27:02    0
+2024-11-04 12:27:07    0
+2024-11-04 12:27:12    0
+Name: combined_anomaly, Length: 121, dtype: int64","datetime
+2024-11-04 12:17:12     True
+2024-11-04 12:17:17    False
+2024-11-04 12:17:22    False
+2024-11-04 12:17:27     True
+2024-11-04 12:17:32    False
+                       ...  
+2024-11-04 12:26:52    False
+2024-11-04 12:26:57    False
+2024-11-04 12:27:02    False
+2024-11-04 12:27:07     True
+2024-11-04 12:27:12    False
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:17:12    False
+2024-11-04 12:17:17    False
+2024-11-04 12:17:22    False
+2024-11-04 12:17:27    False
+2024-11-04 12:17:32    False
+                       ...  
+2024-11-04 12:26:52    False
+2024-11-04 12:26:57    False
+2024-11-04 12:27:02    False
+2024-11-04 12:27:07    False
+2024-11-04 12:27:12    False
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:17:12    False
+2024-11-04 12:17:17    False
+2024-11-04 12:17:22    False
+2024-11-04 12:17:27    False
+2024-11-04 12:17:32    False
+                       ...  
+2024-11-04 12:26:52    False
+2024-11-04 12:26:57    False
+2024-11-04 12:27:02    False
+2024-11-04 12:27:07    False
+2024-11-04 12:27:12    False
+Name: combined_anomaly, Length: 121, dtype: bool"
+"                     anomaly
+datetime                    
+2024-11-04 12:28:02    False
+2024-11-04 12:28:07    False
+2024-11-04 12:28:12    False
+2024-11-04 12:28:17    False
+2024-11-04 12:28:22    False
+...                      ...
+2024-11-04 12:36:52    False
+2024-11-04 12:36:57    False
+2024-11-04 12:37:02    False
+2024-11-04 12:37:07    False
+2024-11-04 12:37:12     True
+
+[111 rows x 1 columns]","datetime
+2024-11-04 12:27:57    False
+2024-11-04 12:28:02    False
+2024-11-04 12:28:07    False
+2024-11-04 12:28:12    False
+2024-11-04 12:28:17    False
+                       ...  
+2024-11-04 12:36:52     True
+2024-11-04 12:36:57     True
+2024-11-04 12:37:02     True
+2024-11-04 12:37:07     True
+2024-11-04 12:37:12    False
+Name: anomaly, Length: 112, dtype: bool","[False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False  True  True  True  True  True  True
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False]","datetime
+2024-11-04 12:27:12    0
+2024-11-04 12:27:17    0
+2024-11-04 12:27:22    0
+2024-11-04 12:27:27    0
+2024-11-04 12:27:32    0
+                      ..
+2024-11-04 12:36:52    0
+2024-11-04 12:36:57    0
+2024-11-04 12:37:02    0
+2024-11-04 12:37:07    0
+2024-11-04 12:37:12    0
+Name: combined_anomaly, Length: 121, dtype: int64","datetime
+2024-11-04 12:27:12     True
+2024-11-04 12:27:17    False
+2024-11-04 12:27:22    False
+2024-11-04 12:27:27    False
+2024-11-04 12:27:32    False
+                       ...  
+2024-11-04 12:36:52    False
+2024-11-04 12:36:57    False
+2024-11-04 12:37:02    False
+2024-11-04 12:37:07    False
+2024-11-04 12:37:12     True
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:27:12    False
+2024-11-04 12:27:17    False
+2024-11-04 12:27:22    False
+2024-11-04 12:27:27    False
+2024-11-04 12:27:32    False
+                       ...  
+2024-11-04 12:36:52    False
+2024-11-04 12:36:57    False
+2024-11-04 12:37:02    False
+2024-11-04 12:37:07    False
+2024-11-04 12:37:12    False
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:27:12    False
+2024-11-04 12:27:17    False
+2024-11-04 12:27:22    False
+2024-11-04 12:27:27    False
+2024-11-04 12:27:32    False
+                       ...  
+2024-11-04 12:36:52    False
+2024-11-04 12:36:57    False
+2024-11-04 12:37:02    False
+2024-11-04 12:37:07    False
+2024-11-04 12:37:12    False
+Name: combined_anomaly, Length: 121, dtype: bool"
+"                     anomaly
+datetime                    
+2024-11-04 12:38:02    False
+2024-11-04 12:38:07    False
+2024-11-04 12:38:12    False
+2024-11-04 12:38:17    False
+2024-11-04 12:38:22    False
+...                      ...
+2024-11-04 12:46:52    False
+2024-11-04 12:46:57    False
+2024-11-04 12:47:02    False
+2024-11-04 12:47:07    False
+2024-11-04 12:47:12    False
+
+[111 rows x 1 columns]","datetime
+2024-11-04 12:37:57    False
+2024-11-04 12:38:02    False
+2024-11-04 12:38:07    False
+2024-11-04 12:38:12    False
+2024-11-04 12:38:17    False
+                       ...  
+2024-11-04 12:46:52    False
+2024-11-04 12:46:57    False
+2024-11-04 12:47:02    False
+2024-11-04 12:47:07    False
+2024-11-04 12:47:12    False
+Name: anomaly, Length: 112, dtype: bool","[False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False  True  True False False False False False False False False False
+ False False False  True  True False False False False False False False
+ False False False False False False False False False False False False
+ False False False]","datetime
+2024-11-04 12:37:12    0
+2024-11-04 12:37:17    0
+2024-11-04 12:37:22    0
+2024-11-04 12:37:27    1
+2024-11-04 12:37:32    1
+                      ..
+2024-11-04 12:46:52    0
+2024-11-04 12:46:57    0
+2024-11-04 12:47:02    0
+2024-11-04 12:47:07    0
+2024-11-04 12:47:12    0
+Name: combined_anomaly, Length: 121, dtype: int64","datetime
+2024-11-04 12:37:12    False
+2024-11-04 12:37:17    False
+2024-11-04 12:37:22    False
+2024-11-04 12:37:27     True
+2024-11-04 12:37:32     True
+                       ...  
+2024-11-04 12:46:52    False
+2024-11-04 12:46:57    False
+2024-11-04 12:47:02    False
+2024-11-04 12:47:07    False
+2024-11-04 12:47:12    False
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:37:12    False
+2024-11-04 12:37:17    False
+2024-11-04 12:37:22    False
+2024-11-04 12:37:27    False
+2024-11-04 12:37:32    False
+                       ...  
+2024-11-04 12:46:52    False
+2024-11-04 12:46:57    False
+2024-11-04 12:47:02    False
+2024-11-04 12:47:07    False
+2024-11-04 12:47:12    False
+Name: combined_anomaly, Length: 121, dtype: bool","datetime
+2024-11-04 12:37:12    False
+2024-11-04 12:37:17    False
+2024-11-04 12:37:22    False
+2024-11-04 12:37:27    False
+2024-11-04 12:37:32    False
+                       ...  
+2024-11-04 12:46:52    False
+2024-11-04 12:46:57    False
+2024-11-04 12:47:02    False
+2024-11-04 12:47:07    False
+2024-11-04 12:47:12    False
+Name: combined_anomaly, Length: 121, dtype: bool"

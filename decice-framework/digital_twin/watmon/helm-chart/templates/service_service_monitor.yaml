@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-watmon-network-service 
+  namespace: monitoring
+  labels:
+    service: watmon-vertexpool-service # service label (will be slected by ServiceMonitor)
+spec:
+  type: NodePort #expose to hosts network
+  selector:
+    watmon-app: network-vertexpool-service # select the pod label
+  ports:
+    - name: vertexpool-port #name the port
+      port: 7997
+      protocol: TCP
+      targetPort: 7997
+      nodePort: {{ .Values.VertexpoolService.nodePort }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: prometheus-stack
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vertexpool-service-monitor  
+    app.kubernetes.io/version: 1.7.0
+    jobLabel: vertexpool-metrics # job name
+    release: prometheus-stack
+  name: vertexpool-service-monitor  
+  namespace: monitoring #deploy ServiceMonitor in the same namespace as prometheus
+spec:  
+  endpoints:
+  - port: vertexpool-port # use the named port
+    scheme: http
+  jobLabel: jobLabel
+  # namespaceSelector: 
+  #         any: true #discover services in all namespace not just monitoring
+  selector:
+    matchLabels:
+      service: watmon-vertexpool-service #select endpoint discovery service

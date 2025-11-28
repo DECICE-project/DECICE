@@ -1,0 +1,208 @@
+{
+    "lastUpdated": "2024-05-06T12:03:09.865470Z",
+    "vertexpools": [
+      {
+        "id": "1",
+        "nodelabels": [
+          "nodepool_type:cloud"
+        ],
+        "nodes": [
+          {
+            "id": "7dd75cbe-6c17-1f54-846e-ef625b709c8a",
+            "name": "mindnet-imac03",
+            "labels": [
+              "beta_kubernetes_io_arch:amd64",
+              "beta_kubernetes_io_os:linux",
+              "kubernetes_io_arch:amd64",
+              "kubernetes_io_hostname:mindnet-imac03",
+              "kubernetes_io_os:linux",
+              "vertexpool_id:1"
+            ],
+            "metrics": {
+              "cpu_usage_percent": 7.533333333170347,
+              "memory_usage_percent": 14.717747807372131,
+              "network_bandwidth_mbps": null
+            },
+            "hardware": {
+              "cpu_cores": 4,
+              "memory_in_mb": 3889
+            }
+          },
+          {
+            "id": "6a14a2cc-2241-11b2-a85c-a1487c9ba39d",
+            "name": "ozaysdev",
+            "labels": [
+              "beta_kubernetes_io_arch:amd64",
+              "beta_kubernetes_io_os:linux",
+              "kubernetes_io_arch:amd64",
+              "kubernetes_io_hostname:ozaysdev",
+              "kubernetes_io_os:linux",
+              "prometheus_stack_admission:prom-operator-admission",
+              "prometheus_stack_alertmanager:prom-alertmanager",
+              "prometheus_stack_grafana:grafana",
+              "prometheus_stack_kube_state:kube-state-metrics",
+              "prometheus_stack_operator:kube-prom-operator",
+              "prometheus_stack_prometheus:kube-prom-prometheus",
+              "vertexpool_id:1"
+            ],
+            "metrics": {
+              "cpu_usage_percent": 5.262500000000429,
+              "memory_usage_percent": 14.866107798982922,
+              "network_bandwidth_mbps": null
+            },
+            "hardware": {
+              "cpu_cores": 8,
+              "memory_in_mb": 15688
+            }
+          }
+        ],
+        "devicelabels": null,
+        "devices": null,
+        "lastUpdated": "2024-05-06T12:03:09.842299Z"
+      },
+      {
+        "id": "2",
+        "nodelabels": [
+          "nodepool_type:edge"
+        ],
+        "nodes": [
+          {
+            "id": "a3d9197b765643568af09eb2bd3e5ce7",
+            "name": "venit-nano-1",
+            "labels": [
+              "beta_kubernetes_io_arch:arm64",
+              "beta_kubernetes_io_os:linux",
+              "kubernetes_io_arch:arm64",
+              "kubernetes_io_hostname:venit-nano-1",
+              "kubernetes_io_os:linux",
+              "vertexpool_id:2"
+            ],
+            "metrics": {
+              "cpu_usage_percent": 8.841666666667152,
+              "memory_usage_percent": 25.0428182594008,
+              "network_bandwidth_mbps": null
+            },
+            "hardware": {
+              "cpu_cores": 4,
+              "memory_in_mb": 3963
+            }
+          }
+        ],
+        "devicelabels": null,
+        "devices": null,
+        "lastUpdated": "2024-05-06T12:03:09.842344Z"
+      },
+      {
+        "id": "3",
+        "nodelabels": null,
+        "nodes": null,
+        "devicelabels": [
+          "devicepool_type:mock_devices"
+        ],
+        "devices": [
+          {
+            "id": "1",
+            "ip": "8.8.8.8",
+            "name": "mock_device_0",
+            "labels": [
+              "mock_addr:google"
+            ]
+          }
+        ],
+        "lastUpdated": "2024-05-06T12:03:09.846463Z"
+      }
+    ],
+    "links": [
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "2",
+        "network_delay_ms": 3.5853509325534105,
+        "link_type": null,
+        "targetname": "venit-nano-1",
+        "target_type": "node",
+        "nodename": "mindnet-imac03",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "1",
+        "network_delay_ms": 48.4927580691874,
+        "link_type": null,
+        "targetname": "ozaysdev",
+        "target_type": "node",
+        "nodename": "mindnet-imac03",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "3",
+        "network_delay_ms": 37.522547878324986,
+        "link_type": null,
+        "targetname": "mock_device",
+        "target_type": "device",
+        "nodename": "mindnet-imac03",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "2",
+        "vertexpool_b_id": "1",
+        "network_delay_ms": 2.003304998652311,
+        "link_type": null,
+        "targetname": "ozaysdev",
+        "target_type": "node",
+        "nodename": "venit-nano-1",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "2",
+        "vertexpool_b_id": "1",
+        "network_delay_ms": 7.14148900078726,
+        "link_type": null,
+        "targetname": "mindnet-imac03",
+        "target_type": "node",
+        "nodename": "venit-nano-1",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "2",
+        "vertexpool_b_id": "3",
+        "network_delay_ms": 29.111431002093013,
+        "link_type": null,
+        "targetname": "mock_device",
+        "target_type": "device",
+        "nodename": "venit-nano-1",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "2",
+        "network_delay_ms": 2.089903999149101,
+        "link_type": null,
+        "targetname": "venit-nano-1",
+        "target_type": "node",
+        "nodename": "ozaysdev",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "1",
+        "network_delay_ms": 10.172557998885168,
+        "link_type": null,
+        "targetname": "mindnet-imac03",
+        "target_type": "node",
+        "nodename": "ozaysdev",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      },
+      {
+        "vertexpool_a_id": "1",
+        "vertexpool_b_id": "3",
+        "network_delay_ms": 31.57268300128635,
+        "link_type": null,
+        "targetname": "mock_device",
+        "target_type": "device",
+        "nodename": "ozaysdev",
+        "lastUpdated": "2024-05-06T15:03:09.864000"
+      }
+    ],
+    "jobs": null
+  }

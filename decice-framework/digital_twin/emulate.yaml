@@ -1,0 +1,110 @@
+vertexpools:
+  - id: vp-compute-1
+    vertexpool_labels:
+      region: edge-east
+    nodes:
+      - name: node-a1
+        metrics:
+          util:
+            mean: 60.0
+            stdev: 10.0
+          cpu_cores: 8
+          mem_total: 32.0
+          total_disk_gb: 512.0
+          network_bandwidth_mbps: 500.0
+          free_disk_gb: 200.7
+        node_info: #optional
+          arch: amd64
+          os: linux
+          rack: r1
+
+      - name: node-a2
+        metrics:
+          util:
+            mean: 45.0
+            stdev: 5.0
+          cpu_cores: 4
+          mem_total: 16.0
+          total_disk_gb: 256.0
+          network_bandwidth_mbps: 70.0
+          free_disk_gb: 100.1
+          power_factor: 0.5 #optional: multiplier to emulated power consumption of node
+        node_info: #optional
+          arch: arm64
+          os: linux
+          zone: z1
+
+    devices: []
+
+  - id: vp-compute-2
+    vertexpool_labels:
+      region: cloud
+    nodes:
+      - name: node-b1
+        metrics:
+          util:
+            mean: 30.0
+            stdev: 15.0
+          cpu_cores: 32
+          mem_total: 256.0
+          total_disk_gb: 5000.0
+          network_bandwidth_mbps: 1000.0
+          free_disk_gb: 4000.5
+          power_factor: 2 #optional: multiplier to emulated power consumption of node
+        node_info:
+          provider: aws
+          instance_type: c6i.8xlarge
+          region: us-west-1
+
+    devices: []
+
+  - id: vp-device-1
+    vertexpool_labels:
+      region: device-zone
+    nodes: []
+    devices:
+      - id: device-c1
+        name: sensor-xyz
+        labels:
+          type: camera
+        device_info: #optional
+          model: IMX500
+          location: rooftop
+          stream_type: rtsp
+
+links:
+  - vertexpool_a_id: vp-compute-1
+    vertexpool_b_id: vp-compute-2
+    network_delay_ms:
+      mean: 15.0
+      stdev: 3.0
+
+  - vertexpool_a_id: vp-compute-2
+    vertexpool_b_id: vp-compute-1
+    network_delay_ms:
+      mean: 15.0
+      stdev: 3.0
+
+  - vertexpool_a_id: vp-compute-1
+    vertexpool_b_id: vp-device-1
+    network_delay_ms:
+      mean: 5.0
+      stdev: 2.0
+
+  - vertexpool_a_id: vp-compute-2
+    vertexpool_b_id: vp-device-1
+    network_delay_ms:
+      mean: 20.0
+      stdev: 5.0
+
+  - vertexpool_a_id: vp-compute-1
+    vertexpool_b_id: vp-compute-1
+    network_delay_ms:
+      mean: 2.0
+      stdev: 0.5
+
+  - vertexpool_a_id: vp-compute-2
+    vertexpool_b_id: vp-compute-2
+    network_delay_ms:
+      mean: 1.0
+      stdev: 0.5

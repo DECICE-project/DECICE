@@ -1,0 +1,66 @@
+services:
+  psgc:
+    build:
+      context: .
+    container_name: decice_psgc
+    network_mode: host
+    depends_on: [redis, minio]
+    volumes:
+      - ~/.kube:/home/appuser/.kube:ro
+      - ~/.minikube:/home/flix/.minikube:ro
+    env_file: [.env]
+    environment:
+      - KUBECONFIG=/home/appuser/.kube/config
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    command: uvicorn api:app --host 0.0.0.0 --port 8040 --reload
+
+  slurm-client:
+    build:
+      context: ../slurm-client
+    container_name: decice_slurm_client
+    network_mode: host
+    env_file: [.env]
+    environment:
+      - SLURM_JWT_KEY_PATH=/etc/slurm/slurm.key 
+    volumes:
+      - ./jwt_keys/slurm.key:/etc/slurm/slurm.key:ro 
+    command: uvicorn main:app --host 0.0.0.0 --port 8060 --reload
+    restart: "no"
+
+  redis:
+    image: redis:alpine
+    container_name: decice_redis
+    network_mode: host
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    ports: ["9000:9000", "9001:9001"]
+    network_mode: host
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_NOTIFY_WEBHOOK_ENABLE_psgc: ${MINIO_NOTIFY_WEBHOOK_ENABLE_psgc}
+      MINIO_NOTIFY_WEBHOOK_ENDPOINT_psgc: ${MINIO_NOTIFY_WEBHOOK_ENDPOINT_psgc}
+    volumes: ["psgc_minio_data:/data"]
+    command: server /data --console-address ":9001"
+
+  minio-setup:
+    image: minio/mc
+    container_name: decice_minio_setup
+    network_mode: host
+    depends_on: [minio, psgc]
+    env_file: [".env"]
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
+    volumes: ["./scripts:/scripts"]
+    entrypoint: /bin/sh
+    command: -c "sh /scripts/init-minio.sh"
+    restart: "no"
+
+volumes:
+  psgc_redis_data:
+  psgc_minio_data:

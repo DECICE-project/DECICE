@@ -1,0 +1,31 @@
+[project]
+name = "slurm-client"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic (>=2.11.9,<3.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "fastapi[all] (>=0.117.1,<0.118.0)",
+    "PyJWT (>=2.8.0,<3.0.0)",
+    "pydantic-settings (>=2.11.0,<3.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "slurm_client", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "isort (>=7.0.0,<8.0.0)",
+    "black (>=25.9.0,<26.0.0)",
+    "pytest (>=8.4.2,<9.0.0)",
+    "coverage (>=7.11.0,<8.0.0)"
+]

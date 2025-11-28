@@ -1,0 +1,309 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: simple-ml-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2025-02-13T12:38:39.744315',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Simple ML pipeline with
+      PVCs and TensorBoard", "name": "simple-ml-pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
+spec:
+  entrypoint: simple-ml-pipeline
+  templates:
+  - name: create-dataset
+    container:
+      args: []
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'numpy' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
+        --no-warn-script-location 'numpy' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def create_dataset():\n    \"\"\" \n    Put your code for creating a dataset\
+        \ here.\n    This is a helper function where you can define how your dataset\
+        \ will be created,\n    including any preprocessing or transformations before\
+        \ saving it.\n    Set the path where you want to save the dataset (data_path).\n\
+        \    \"\"\"\n    import os\n    import numpy as np\n    data_path = \"/mnt/shared/data\"\
+        \  # Modify this path if needed\n    np.random.seed(42)\n    x = np.linspace(0,\
+        \ 2 * np.pi, 100)\n    y = np.sin(x)\n    dataset = np.column_stack((x, y))\n\
+        \    os.makedirs(data_path, exist_ok=True)\n    np.save(os.path.join(data_path,\
+        \ 'dataset.npy'), dataset)\n    print(f\"Dataset saved at {data_path}\")\n\
+        \nimport argparse\n_parser = argparse.ArgumentParser(prog='Create dataset',\
+        \ description='Put your code for creating a dataset here.')\n_parsed_args\
+        \ = vars(_parser.parse_args())\n\n_outputs = create_dataset(**_parsed_args)\n"
+      image: python:3.7
+      volumeMounts:
+      - {mountPath: /mnt/shared, name: shared-volume}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Put your
+          code for creating a dataset here.", "implementation": {"container": {"args":
+          [], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+          pip install --quiet --no-warn-script-location ''numpy'' || PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''numpy'' --user)
+          && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf \"%s\" \"$0\"
+          > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n", "def create_dataset():\n    \"\"\"
+          \n    Put your code for creating a dataset here.\n    This is a helper function
+          where you can define how your dataset will be created,\n    including any
+          preprocessing or transformations before saving it.\n    Set the path where
+          you want to save the dataset (data_path).\n    \"\"\"\n    import os\n    import
+          numpy as np\n    data_path = \"/mnt/shared/data\"  # Modify this path if
+          needed\n    np.random.seed(42)\n    x = np.linspace(0, 2 * np.pi, 100)\n    y
+          = np.sin(x)\n    dataset = np.column_stack((x, y))\n    os.makedirs(data_path,
+          exist_ok=True)\n    np.save(os.path.join(data_path, ''dataset.npy''), dataset)\n    print(f\"Dataset
+          saved at {data_path}\")\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Create
+          dataset'', description=''Put your code for creating a dataset here.'')\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = create_dataset(**_parsed_args)\n"],
+          "image": "python:3.7"}}, "name": "Create dataset"}', pipelines.kubeflow.org/component_ref: '{}'}
+    volumes:
+    - name: shared-volume
+      persistentVolumeClaim: {claimName: shared-pvc}
+  - name: preprocess-data
+    container:
+      args: []
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'numpy' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
+        --no-warn-script-location 'numpy' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def preprocess_data():
+            """
+            Put your data preprocessing code here.
+            This function processes the dataset you created in the previous step.
+            Set the correct paths for your dataset and processed data.
+            """
+            import os
+            import numpy as np
+            data_path = "/mnt/shared/data"  # Modify this path if needed
+            processed_data_path = "/mnt/shared/processed_data"  # Modify this path if needed
+            dataset = np.load(os.path.join(data_path, 'dataset.npy'))
+            x, y = dataset[:, 0], dataset[:, 1]
+            x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))  # Normalize the data
+            os.makedirs(processed_data_path, exist_ok=True)
+            np.save(os.path.join(processed_data_path, 'processed_dataset.npy'), np.column_stack((x_norm, y)))
+            print("Preprocessed dataset saved.")
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Preprocess data', description='Put your data preprocessing code here.')
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = preprocess_data(**_parsed_args)
+      image: python:3.7
+      volumeMounts:
+      - {mountPath: /mnt/shared, name: shared-volume}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Put your
+          data preprocessing code here.", "implementation": {"container": {"args":
+          [], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+          pip install --quiet --no-warn-script-location ''numpy'' || PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''numpy'' --user)
+          && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf \"%s\" \"$0\"
+          > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n", "def preprocess_data():\n    \"\"\"\n    Put
+          your data preprocessing code here.\n    This function processes the dataset
+          you created in the previous step.\n    Set the correct paths for your dataset
+          and processed data.\n    \"\"\"\n    import os\n    import numpy as np\n    data_path
+          = \"/mnt/shared/data\"  # Modify this path if needed\n    processed_data_path
+          = \"/mnt/shared/processed_data\"  # Modify this path if needed\n    dataset
+          = np.load(os.path.join(data_path, ''dataset.npy''))\n    x, y = dataset[:,
+          0], dataset[:, 1]\n    x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))  #
+          Normalize the data\n    os.makedirs(processed_data_path, exist_ok=True)\n    np.save(os.path.join(processed_data_path,
+          ''processed_dataset.npy''), np.column_stack((x_norm, y)))\n    print(\"Preprocessed
+          dataset saved.\")\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Preprocess
+          data'', description=''Put your data preprocessing code here.'')\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = preprocess_data(**_parsed_args)\n"],
+          "image": "python:3.7"}}, "name": "Preprocess data"}', pipelines.kubeflow.org/component_ref: '{}'}
+    volumes:
+    - name: shared-volume
+      persistentVolumeClaim: {claimName: shared-pvc}
+  - name: run-inference
+    container:
+      args: []
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'tensorflow' 'numpy' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install
+        --quiet --no-warn-script-location 'tensorflow' 'numpy' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def run_inference():
+            """
+            Put your code for running inference here.
+            This function uses the trained model to make predictions based on input data.
+            Set the correct model path and data for prediction.
+            """
+            import os
+            import tensorflow as tf
+            import numpy as np
+            model_path = "/mnt/shared/model"  # Modify this path if needed
+            model = tf.keras.models.load_model(os.path.join(model_path, 'simple_model.h5'))
+            test_x = np.linspace(0, 2 * np.pi, 10)
+            predictions = model.predict(test_x)
+            print("Predictions:", predictions)
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Run inference', description='Put your code for running inference here.')
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = run_inference(**_parsed_args)
+      image: python:3.7
+      volumeMounts:
+      - {mountPath: /mnt/shared, name: shared-volume}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Put your
+          code for running inference here.", "implementation": {"container": {"args":
+          [], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+          pip install --quiet --no-warn-script-location ''tensorflow'' ''numpy'' ||
+          PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+          ''tensorflow'' ''numpy'' --user) && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf
+          \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+          "def run_inference():\n    \"\"\"\n    Put your code for running inference
+          here.\n    This function uses the trained model to make predictions based
+          on input data.\n    Set the correct model path and data for prediction.\n    \"\"\"\n    import
+          os\n    import tensorflow as tf\n    import numpy as np\n    model_path
+          = \"/mnt/shared/model\"  # Modify this path if needed\n    model = tf.keras.models.load_model(os.path.join(model_path,
+          ''simple_model.h5''))\n    test_x = np.linspace(0, 2 * np.pi, 10)\n    predictions
+          = model.predict(test_x)\n    print(\"Predictions:\", predictions)\n\nimport
+          argparse\n_parser = argparse.ArgumentParser(prog=''Run inference'', description=''Put
+          your code for running inference here.'')\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
+          = run_inference(**_parsed_args)\n"], "image": "python:3.7"}}, "name": "Run
+          inference"}', pipelines.kubeflow.org/component_ref: '{}'}
+    volumes:
+    - name: shared-volume
+      persistentVolumeClaim: {claimName: shared-pvc}
+  - name: simple-ml-pipeline
+    dag:
+      tasks:
+      - {name: create-dataset, template: create-dataset}
+      - name: preprocess-data
+        template: preprocess-data
+        dependencies: [create-dataset]
+      - name: run-inference
+        template: run-inference
+        dependencies: [train-model]
+      - name: train-model
+        template: train-model
+        dependencies: [preprocess-data]
+  - name: train-model
+    container:
+      args: []
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'tensorflow' 'mlflow' 'numpy' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+        pip install --quiet --no-warn-script-location 'tensorflow' 'mlflow' 'numpy'
+        --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def train_model():
+            """
+            Put your model training code here.
+            This function trains a model using the preprocessed dataset.
+            Set paths for saving the model and logs.
+            """
+            import os
+            import tensorflow as tf
+            import mlflow
+            import numpy as np
+            processed_data_path = "/mnt/shared/processed_data"  # Modify this path if needed
+            model_path = "/mnt/shared/model"  # Modify this path if needed
+            log_dir = "/mnt/shared/logs"  # Modify this path if needed
+
+            mlflow.start_run()
+            data = np.load(os.path.join(processed_data_path, 'processed_dataset.npy'))
+            x, y = data[:, 0], data[:, 1]
+
+            model = tf.keras.Sequential([
+                tf.keras.layers.Dense(1, input_shape=[1])
+            ])
+            model.compile(optimizer='adam', loss='mse')
+
+            tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
+            model.fit(x, y, epochs=5, verbose=2, callbacks=[tensorboard_callback])
+
+            os.makedirs(model_path, exist_ok=True)
+            model.save(os.path.join(model_path, 'simple_model.h5'))
+
+            mlflow.log_param("epochs", 5)
+            mlflow.log_artifact(os.path.join(model_path, 'simple_model.h5'))
+            mlflow.end_run()
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Train model', description='Put your model training code here.')
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = train_model(**_parsed_args)
+      image: python:3.7
+      volumeMounts:
+      - {mountPath: /mnt/shared, name: shared-volume}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Put your
+          model training code here.", "implementation": {"container": {"args": [],
+          "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip
+          install --quiet --no-warn-script-location ''tensorflow'' ''mlflow'' ''numpy''
+          || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+          ''tensorflow'' ''mlflow'' ''numpy'' --user) && \"$0\" \"$@\"", "sh", "-ec",
+          "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
+          -u \"$program_path\" \"$@\"\n", "def train_model():\n    \"\"\"\n    Put
+          your model training code here.\n    This function trains a model using the
+          preprocessed dataset.\n    Set paths for saving the model and logs.\n    \"\"\"\n    import
+          os\n    import tensorflow as tf\n    import mlflow\n    import numpy as
+          np\n    processed_data_path = \"/mnt/shared/processed_data\"  # Modify this
+          path if needed\n    model_path = \"/mnt/shared/model\"  # Modify this path
+          if needed\n    log_dir = \"/mnt/shared/logs\"  # Modify this path if needed\n\n    mlflow.start_run()\n    data
+          = np.load(os.path.join(processed_data_path, ''processed_dataset.npy''))\n    x,
+          y = data[:, 0], data[:, 1]\n\n    model = tf.keras.Sequential([\n        tf.keras.layers.Dense(1,
+          input_shape=[1])\n    ])\n    model.compile(optimizer=''adam'', loss=''mse'')\n\n    tensorboard_callback
+          = tf.keras.callbacks.TensorBoard(log_dir=log_dir)\n    model.fit(x, y, epochs=5,
+          verbose=2, callbacks=[tensorboard_callback])\n\n    os.makedirs(model_path,
+          exist_ok=True)\n    model.save(os.path.join(model_path, ''simple_model.h5''))\n\n    mlflow.log_param(\"epochs\",
+          5)\n    mlflow.log_artifact(os.path.join(model_path, ''simple_model.h5''))\n    mlflow.end_run()\n\nimport
+          argparse\n_parser = argparse.ArgumentParser(prog=''Train model'', description=''Put
+          your model training code here.'')\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
+          = train_model(**_parsed_args)\n"], "image": "python:3.7"}}, "name": "Train
+          model"}', pipelines.kubeflow.org/component_ref: '{}'}
+    volumes:
+    - name: shared-volume
+      persistentVolumeClaim: {claimName: shared-pvc}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

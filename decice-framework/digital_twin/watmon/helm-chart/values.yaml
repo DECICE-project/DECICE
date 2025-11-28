@@ -1,0 +1,47 @@
+# WATMON service settings
+settings:
+  # Prometheus URL to query for metrics
+  prometheusUrl: "http://prometheus-stack-kube-prom-prometheus.monitoring:9090"
+
+  # PromQL-related settings
+  promql:
+    # Range selector for network delay PromQL queries
+    networkDelayRangeSelector: "1m"
+# secret
+secret: gwdg-harbor-docker
+
+VertexpoolService:
+  # WATMON-Service will run on a single selected node 
+  nodeSelector: "asnode06.e4red" #< EDIT! according to your nodename
+  #Port to expose the service on the node
+  nodePort: 30098
+
+  image:
+    registry: "harbor.gwdg.de/decice" #< EDIT! according to your image registry
+    repository: "watmon_decice_service" #< Edit this according to how you named the image
+    tag: "latest"
+    pullPolicy: "Always"
+
+  #path to persisted database directory on selected host
+  hostDatabaseDirectoryPath: "/var/local/watmon_decice_service_data"
+
+NetworkExporter:
+
+  # x86 architecture 
+  regularImage:
+    registry: "harbor.gwdg.de/decice" #< EDIT! according to your image registry
+    repository: "watmon_decice_network_exporter" #< Edit this according to how you named the image
+    tag: "latest"
+    pullPolicy: "Always"
+
+    additionalNodeSelectorTerms: # Optional additional node selection terms on regular images daemonset.
+    # - key: node-role.kubernetes.io/control-plane
+    #   operator: DoesNotExist
+
+
+  # arm architecture
+  kubeedgeImage:
+    registry: "harbor.gwdg.de/decice" #< EDIT! according to your image registry
+    repository: "watmon_decice_network_exporter_edge" #< Edit this according to how you named the image
+    tag: "latest"
+    pullPolicy: "Always"

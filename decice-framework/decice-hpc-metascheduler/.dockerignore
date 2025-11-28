@@ -1,0 +1,45 @@
+# Git 和版本控制
+.git
+.gitignore
+
+# Python 缓存和虚拟环境
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# 测试和覆盖率报告
+.coverage
+.pytest_cache/
+htmlcov/
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 文档和 README
+*.md
+docs/
+
+# 本地数据库和日志
+*.db
+*.log
+data/
+
+# Docker 相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 其他
+thumbnail_works.jpg

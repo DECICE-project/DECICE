@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pcp-test
+spec:
+  containers:
+    - name: pcp-container
+      image: ghcr.io/mskazemi/k8spodpcp:latest
+      command: ["sleep"]
+      args: ["3600"]
+  restartPolicy: Never
+

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: decice-digital-twin
+description: A Helm chart for DECICE Digital Twin
+
+
+type: application
+version: 1.0.0
+appVersion: "0.2.0"
+
+
+dependencies:
+  - name: influxdb2
+    alias: influxdb
+    version: 2.1.2
+    repository: https://helm.influxdata.com/

@@ -1,0 +1,31 @@
+# ===========================================
+# RBAC (service account + permissions)
+# ===========================================
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: podpower-read
+  namespace: energy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: podpower-read
+rules:
+- apiGroups: ["", "apps", "batch"]
+  resources: ["pods", "deployments", "jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: podpower-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: podpower-read
+subjects:
+- kind: ServiceAccount
+  name: podpower-read
+  namespace: energy

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watmon-service-settings-config
+  namespace: monitoring
+data:
+  settings.yaml: |
+    prometheus_url: "{{ .Values.settings.prometheusUrl }}"
+    network_exporter_label: "agent=network-metric-exporter"
+    api_port: 7997
+    exporter_port: 7987
+    exporter_vertexpools_endpoint: "/vertexpools/"
+    promql:
+      network_delay_range_selector: "{{ .Values.settings.promql.networkDelayRangeSelector }}"

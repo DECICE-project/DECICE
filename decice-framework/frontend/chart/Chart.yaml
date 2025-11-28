@@ -1,0 +1,5 @@
+apiVersion: v2
+name: decice-dashboard
+description: A Helm chart for deploying decice dashboard
+version: 0.1.1
+appVersion: "0.0.4"

@@ -1,0 +1,21 @@
+.workflow-arrow-edge {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.workflow-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.react-flow__node-default {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}

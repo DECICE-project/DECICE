@@ -1,0 +1,100 @@
+stages:
+  - build
+  - deploy
+
+###############
+# Job Template
+###############
+.build-image: &build-image
+  script:
+    - echo "Docker login..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - echo "Pulling last cache image (if exists)..."
+    - docker pull $IMAGE_NAME:$CACHE_TAG || true
+    - echo "Building image $IMAGE_NAME:$IMAGE_TAG ..."
+    - docker build --cache-from=$IMAGE_NAME:$CACHE_TAG -t $IMAGE_NAME:$IMAGE_TAG -f $DOCKERFILE_PATH $BUILD_PATH
+    - echo "Pushing commit-tagged image..."
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - echo "Updating cache tag..."
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$CACHE_TAG
+    - docker push $IMAGE_NAME:$CACHE_TAG
+    - echo "IMAGE_TAG=$IMAGE_TAG" > $ENV_FILE
+  artifacts:
+    paths:
+      - $ENV_FILE
+    expire_in: 1 hour
+
+
+###########################
+# Build Watmon & Push Image
+###########################
+build-watmon-exporter:
+  <<: *build-image
+  stage: build
+  rules:
+    - changes:
+        - "watmon/exporter/**/*"
+  variables:
+    IMAGE_NAME: "harbor.gwdg.de/decice/watmon_decice_network_exporter"
+    IMAGE_TAG: "${CI_COMMIT_SHA}"
+    CACHE_TAG: "cache"
+    DOCKERFILE_PATH: $CI_PROJECT_DIR/watmon/exporter/deployment/Dockerfile
+    BUILD_PATH: $CI_PROJECT_DIR/watmon/exporter
+    ENV_FILE: watmon_exporter.env
+
+
+build-watmon-service:
+  <<: *build-image
+  stage: build
+  rules:
+    - changes:
+        - "watmon/service/**/*"
+  variables:
+    IMAGE_NAME: "harbor.gwdg.de/decice/watmon_decice_service"
+    IMAGE_TAG: "${CI_COMMIT_SHA}"
+    CACHE_TAG: "cache"
+    DOCKERFILE_PATH: $CI_PROJECT_DIR/watmon/service/deployment/Dockerfile
+    BUILD_PATH: $CI_PROJECT_DIR/watmon/service
+    ENV_FILE: watmon_service.env
+
+###########################
+# Trigger Orchestrator (CD)
+###########################
+trigger-orchestrator-watmon-exporter:
+  stage: deploy
+  needs:
+    - job: "build-watmon-exporter"
+      optional: true
+  trigger:
+    project: decice/deployment-orchestrator
+    branch: main
+    strategy: depend
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dt-pipeline" || $CI_COMMIT_BRANCH == "digital-twin-dev"'
+      changes:
+        - "watmon/exporter/**/*"
+      when: on_success
+    - when: never
+  variables:
+    CHANGED_SERVICE: watmon-exporter
+    EXPORTER_IMAGE_TAG: "${CI_COMMIT_SHA}"
+
+
+trigger-orchestrator-watmon-service:
+  stage: deploy
+  needs:
+    - job: "build-watmon-service"
+      optional: true
+  trigger:
+    project: decice/deployment-orchestrator
+    branch: main
+    strategy: depend
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dt-pipeline" || $CI_COMMIT_BRANCH == "digital-twin-dev"'
+      changes:
+        - "watmon/service/**/*"
+      when: on_success
+    - when: never
+  variables:
+    CHANGED_SERVICE: watmon-service
+    SERVICE_IMAGE_TAG: "${CI_COMMIT_SHA}"
