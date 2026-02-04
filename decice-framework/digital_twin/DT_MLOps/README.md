@@ -48,6 +48,16 @@ The Kubeflow Pipeline Template is an example designed to simplify the creation a
 
 ## Citation
 If you find the tools or code in this repository useful for your research or work, please consider citing our paper:
+```bibtex
+@article{ardebili2025elevating,
+  title={Elevating Datacenter Resilience with ThermADNet: A Thermal Anomaly Detection System},
+  author={Seyedkazemi Ardebili, Mohsen and Acquaviva, Andrea and Benini, Luca and Bartolini, Andrea},
+  journal={Future Generation Computer Systems},
+  pages={108311},
+  year={2025},
+  publisher={Elsevier}
+}
+```
 
 ```bibtex
 @article{graafe,
