@@ -13,7 +13,7 @@ The DECICE Digital Twin(DT) is a FastAPI-based service for representing, simulat
 
 - [**Simulator**](#emulatorsimulator) - The simulator reads a YAML file in fixed format, emulates dynamic metrics using statistical sampling, converts data to the Digital Twin model, and sends periodic updates to the Digital Twin API.
 
-- **ML Modules** - ML Modules can be directly integrated inside DT also can use external [endpoints](historical_data.md#digital-twin---influxdb-wrapper-endpoints) to update Time-Series storage of DT.
+- [**ML Modules**](./DT_MLOps/) - ML Modules can be directly integrated inside DT also can use external [endpoints](historical_data.md#digital-twin---influxdb-wrapper-endpoints) to update Time-Series storage of DT.
 
 ![services_arch](images/service_arch.png)
 
