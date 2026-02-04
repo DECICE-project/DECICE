@@ -39,6 +39,7 @@ This integration of MLOps and Digital Twins, provides a powerful solution for pr
 - [Computing Continuum Nodes Anomaly Detection](./MLModels/Node_Anomaly_Detection/)
 - [Carbon Intensity Prediction](./MLModels/Green_Computing/)
 - [UoPC: A User-Based Online Framework to Predict Job Power Consumption in HPC Systems](./MLModels/UoPC/)
+- [EnergetiScope — Kubernetes Pod Power and Energy Prediction](./MLModels/EnergetiScope/)
 - [GRAAFE: GRaph Anomaly Anticipation Framework for Exascale HPC systems](./MLModels/GRAAFE/)
 
 ### Kubeflow Pipeline Template
