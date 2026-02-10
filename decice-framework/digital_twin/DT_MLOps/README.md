@@ -39,6 +39,7 @@ This integration of MLOps and Digital Twins, provides a powerful solution for pr
 - [Computing Continuum Nodes Anomaly Detection](./MLModels/Node_Anomaly_Detection/)
 - [Carbon Intensity Prediction](./MLModels/Green_Computing/)
 - [UoPC: A User-Based Online Framework to Predict Job Power Consumption in HPC Systems](./MLModels/UoPC/)
+- [EnergetiScope — Kubernetes Pod Power and Energy Prediction](./MLModels/EnergetiScope/)
 - [GRAAFE: GRaph Anomaly Anticipation Framework for Exascale HPC systems](./MLModels/GRAAFE/)
 
 ### Kubeflow Pipeline Template
@@ -48,6 +49,16 @@ The Kubeflow Pipeline Template is an example designed to simplify the creation a
 
 ## Citation
 If you find the tools or code in this repository useful for your research or work, please consider citing our paper:
+```bibtex
+@article{ardebili2025elevating,
+  title={Elevating Datacenter Resilience with ThermADNet: A Thermal Anomaly Detection System},
+  author={Seyedkazemi Ardebili, Mohsen and Acquaviva, Andrea and Benini, Luca and Bartolini, Andrea},
+  journal={Future Generation Computer Systems},
+  pages={108311},
+  year={2025},
+  publisher={Elsevier}
+}
+```
 
 ```bibtex
 @article{graafe,

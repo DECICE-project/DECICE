@@ -1,68 +1,6 @@
-# k8sPodPCP — Quick Start for Scheduler Integrations
+# EnergetiScope — Kubernetes Pod Power and Energy Prediction
 
-FastAPI service to estimate power/energy for Kubernetes workloads. Use it from schedulers, controllers, or CronJobs to predict energy in advance.
-
-## In-cluster access
-
-- Service DNS: `http://podpower-predict.<namespace>.svc.cluster.local:8000`
-- Default port: `8000`
-- Deploy with `k8s/*deploy-podpower-predict*.yaml` (ensures model/encoder artifacts are mounted)
-
-## Endpoints
-
-- POST `/predict`
-  - Input (JSON): `InferenceRequest` (same schema produced by `app/k8s_collect.py`)
-  - Output (JSON):
-    - `pred_energy_step_j` (float)
-    - `workload_kind`, `workload_name`, `namespace`, `spec_hash`
-
-- POST `/infer/from-yaml`
-  - Input (text/plain): Kubernetes YAML for `Deployment`/`Job`/`CronJob`
-  - Output (JSON): Array of `InferenceRequest` JSON objects
-
-- POST `/predict/from-yaml`
-  - Input (text/plain): Kubernetes YAML for `Deployment`/`Job`/`CronJob`
-  - Output (JSON): Same shape as `/predict`
-
-Swagger UI: `http://<service>/docs` • OpenAPI: `http://<service>/openapi.json`
-
-## Minimal examples
-
-### Predict from a live Deployment (inside cluster)
-
-```bash
-kubectl get deploy nginx -n default -o yaml | \
-curl -sS -X POST \
-  http://podpower-predict.default.svc.cluster.local:8000/predict/from-yaml \
-  -H 'Content-Type: text/plain' --data-binary @- | jq .
-```
-
-### Predict with `InferenceRequest` JSON
-
-```bash
-curl -sS -X POST http://podpower-predict.default.svc.cluster.local:8000/predict \
-  -H 'Content-Type: application/json' \
-  -d '{
-        "workload_kind": "Deployment",
-        "workload_name": "nginx",
-        "namespace": "default",
-        "pod_spec": {"containers": [{"name": "nginx", "image": "nginx:1.25"}]}
-      }' | jq .
-```
-
-### Response shape
-
-```json
-{
-  "pred_energy_step_j": 123.4,
-  "workload_kind": "Deployment",
-  "workload_name": "nginx",
-  "namespace": "default",
-  "spec_hash": "6c7c..."
-}
-```
-
-Full documentation moved to `README_FULL.md`.
+Predict energy/power for Kubernetes workloads from their specs. This repo collects workload templates, encodes them into features, trains a simple KNN regressor, and serves predictions via a FastAPI service. It integrates with Kepler and Prometheus to build ground-truth labels and can run end-to-end on Kubernetes.
 
 ## ✨ Features
 
@@ -180,14 +118,14 @@ python app/predict_k8s.py \
 ### Docker
 
 ```bash
-docker build -t k8spodpcp:latest .
+docker build -t energetiscope:latest .
 
 # Run API (override image CMD to start uvicorn)
 docker run --rm -p 8000:8000 \
   -e ENCODER_PATH=/app/artifacts/encoder.joblib \
   -e MODEL_PATH=/app/artifacts/knn_energy.joblib \
   -v "$(pwd)/app/artifacts:/app/artifacts:ro" \
-  k8spodpcp:latest \
+  energetiscope:latest \
   uvicorn app/predict_service:app --host 0.0.0.0 --port 8000
 ```
 
@@ -340,54 +278,12 @@ python app/k8s_collect.py from-file ./example/example.yaml
   }
   ```
 
-## 🧪 Testing & Quality
-
-> **TODO:** Add tests and CI. Suggested commands once added:
-> `pytest -q`, `ruff check .`, `black --check .`
-
-## 🗺️ Roadmap
-
-- Add validation datasets and benchmarks
-- Optional mutating webhook to annotate workloads with predicted power
-- Model registry and automated retraining
-
-## 🤝 Contributing
-
-Contributions are welcome. Please open an issue to discuss major changes.
-
-## 🔐 Security
-
-Please report vulnerabilities via a private issue.
-
-## 🧾 License
-
-> **TODO:** Add a `LICENSE` file (recommended: Apache-2.0 or MIT).
-
-## 📝 Cite Us
-
-> **DOI:** `TODO`
-
-```bibtex
-@misc{K8sPodPCP2025,
-  title = {k8sPodPCP: Kubernetes Pod Power and Energy Prediction},
-  author = {TODO},
-  year = {2025},
-  doi = {TODO}
-}
-```
-
-## 🙏 Acknowledgments
-
-- Kepler (`sustainable-computing-io/kepler`)
-- Prometheus & kube-prometheus-stack
-
-## 📬 Contact
-
-`<CONTACT_NAME>` — `<EMAIL>`
 
 ## 📦 Additional Artifacts
 
-- `kepler.md`: Helm install commands for Kepler
-- `prometheus.md`: Helm install commands for kube-prometheus-stack
-- `example/example.yaml`: Sample K8s manifest for local tryouts
+
+- [Kepler](./kepler-setup.md): Helm install commands for Kepler
+- [Prometheus](./prometheus-setup.md): Helm install commands for kube-prometheus-stack
+- [Examples](./example/): Sample K8s manifest for local tryouts
+
 
