@@ -261,6 +261,9 @@ class SnakemakeParser(AbstractWorkflowParser):
                 image=rule.get("container_image", None),
                 command_str=command,
                 workflow_id=workflow_id,
+                required_cpu="1",
+                required_memory="128Mi",
+                annotations={"dev.decice.com/storage-request": "1Gi"} 
             )
             job_map[job.name] = job
             all_jobs.append(job)
