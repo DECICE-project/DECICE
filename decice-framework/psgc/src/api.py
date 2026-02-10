@@ -276,7 +276,7 @@ async def handle_task_status(
     status_code=status.HTTP_202_ACCEPTED,
     summary="Webhook for MinIO upload events",
     tags=["Internal Webhooks"],
-    dependencies=[Depends(verify_internal_traffic)],
+    # dependencies=[Depends(verify_internal_traffic)],
 )
 async def handle_minio_webhook(
     payload: MinioWebhookPayload,
