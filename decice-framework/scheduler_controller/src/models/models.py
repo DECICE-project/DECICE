@@ -14,6 +14,9 @@ class HardwareRequirements(BaseModel):
 
     @field_validator("required_cpu", mode="before")
     def convert_cpu(cls, v):
+        if v is None:
+            return 1
+        
         if isinstance(v, str) and v.endswith("m"):
             cores = int(v[:-1]) / 1000
             return int(-(-cores // 1))
@@ -21,6 +24,12 @@ class HardwareRequirements(BaseModel):
 
     @field_validator("required_memory", mode="before")
     def set_mem_req(cls, v):
+        if v is None:
+            return 128
+        
+        if not isinstance(v, str):
+            return int(v) 
+        
         if not isinstance(v, str):
             raise ValueError("memory must be a string")
 
