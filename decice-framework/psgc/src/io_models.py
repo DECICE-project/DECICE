@@ -93,6 +93,7 @@ class WorkflowPSGCRequest(BaseModel):
     user_id: UUID
     filename: Optional[str] = None
 
+    annotations: Optional[dict[str, Any]] = {}
     tasks: list[
         Annotated[
             Union[
