@@ -1,8 +1,8 @@
-from digital_twin.core.data_model import DeciceDigitalTwin, Node, Link, Device, Vertexpool, Metrics
-from digital_twin.core.model_utils import get_all_links, get_devices_vp_tuple, get_nodes_vp_tuple
+from core.data_model import DeciceDigitalTwin, Node, Link, Device, Vertexpool, Metrics
+from core.model_utils import get_all_links, get_devices_vp_tuple, get_nodes_vp_tuple
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
-from digital_twin.core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
+from core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
 from typing import Any
 from abc import ABC, abstractmethod
 import time

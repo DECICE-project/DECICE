@@ -1,4 +1,4 @@
-from digital_twin.core.data_model import DeciceDigitalTwin, Pod, Node, Job, Link, Device
+from core.data_model import DeciceDigitalTwin, Pod, Node, Job, Link, Device
 from copy import deepcopy
 
 

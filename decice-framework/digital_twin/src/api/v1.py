@@ -2,11 +2,11 @@ from fastapi import APIRouter, status, Depends, HTTPException, Query
 from datetime import datetime, timedelta
 import json
 
-from digital_twin.core.controller import DTCController, get_dtc_controller
-from digital_twin.core.data_model import Node, Link, Job, DeciceDigitalTwin, DeciceDigitalTwinV1
-from digital_twin.core.model_utils import get_all_nodes, get_all_links, get_all_jobs
-from digital_twin.core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
-from digital_twin.config.config import service_settings, ServiceSettings
+from core.controller import DTCController, get_dtc_controller
+from core.data_model import Node, Link, Job, DeciceDigitalTwin, DeciceDigitalTwinV1
+from core.model_utils import get_all_nodes, get_all_links, get_all_jobs
+from core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
+from config.config import service_settings, ServiceSettings
 from influxdb_client.rest import ApiException
 
 router = APIRouter()
