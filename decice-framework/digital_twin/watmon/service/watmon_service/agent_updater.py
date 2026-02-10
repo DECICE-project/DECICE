@@ -15,9 +15,7 @@ from kubernetes.client import CoreV1Api, V1PodList, V1Pod
 from aiopromql import PrometheusAsync
 
 
-def _get_pods_with_label(
-    k8s_v1: CoreV1Api, label_key: str, label_value: str, namespace: str
-) -> list[str]:
+def _get_pods_with_label(k8s_v1: CoreV1Api, label_key: str, label_value: str, namespace: str) -> list[str]:
     """Asyncronous Namespaced running pods with label"""
     pods: V1PodList = k8s_v1.list_namespaced_pod(
         namespace=namespace,
@@ -29,11 +27,7 @@ def _get_pods_with_label(
     if not pod_list:
         return []
 
-    agents = [
-        pod.status.pod_ip
-        for pod in pod_list
-        if pod.status.phase == "Running" and pod.status.pod_ip is not None
-    ]
+    agents = [pod.status.pod_ip for pod in pod_list if pod.status.phase == "Running" and pod.status.pod_ip is not None]
     return agents
 
 
@@ -94,17 +88,13 @@ class AgentUpdater:
 
     async def _check_trigger_due_to_timeout(self):
         current_time = datetime.now()
-        if (
-            current_time - self.last_informed
-        ).total_seconds() > self.max_inform_interval_seconds:
+        if (current_time - self.last_informed).total_seconds() > self.max_inform_interval_seconds:
             print("Agent Trigger due to timeout!")
             await self.trigger()
 
     def _is_trigger_too_soon_to_update(self):
         current_time = datetime.now()
-        if (
-            current_time - self.last_informed
-        ).total_seconds() < self.min_inform_inertval_seconds:
+        if (current_time - self.last_informed).total_seconds() < self.min_inform_inertval_seconds:
             print("Trigger too soon to update")
             return True
         else:
@@ -138,9 +128,7 @@ class AgentUpdater:
             try:
                 response = await client.post(url, data=data)
                 if response.is_error:
-                    print(
-                        f"POST ERROR on url: {url}, Status Code: {response.status_code} "
-                    )
+                    print(f"POST ERROR on url: {url}, Status Code: {response.status_code} ")
                     return None
                 else:
                     print(f"Post succesfull on {url}")

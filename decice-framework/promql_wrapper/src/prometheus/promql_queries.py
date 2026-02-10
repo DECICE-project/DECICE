@@ -1,5 +1,4 @@
-from config.config import (ClusterInfoQueryConfig, NodeInfoQueryConfig,
-                           get_settings)
+from config.config import ClusterInfoQueryConfig, NodeInfoQueryConfig, get_settings
 
 # Node queries
 NODES = "node_uname_info"

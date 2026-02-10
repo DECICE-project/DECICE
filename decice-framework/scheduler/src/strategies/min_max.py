@@ -69,7 +69,7 @@ def schedule(
 
                 node_df.loc[
                     node_df["node_id"] == selected_node_id_str, "heuristic_load"
-                ] += (job_cpu_req + job_mem_req)
+                ] += job_cpu_req + job_mem_req
                 logger.debug(
                     f"Job {job_id_str} assigned to Node {selected_node_id_str}. New load: {node_df.loc[node_df['node_id'] == selected_node_id_str, 'heuristic_load'].iloc[0]:.2f}"
                 )

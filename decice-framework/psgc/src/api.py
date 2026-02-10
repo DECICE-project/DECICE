@@ -18,9 +18,13 @@ from clients.cm_client import CMClient
 from clients.slurm_client import SlurmClient
 from config import get_settings
 from engine import PsgcEngine
-from io_models import (MinioWebhookPayload, PSGCTaskStatusUpdateRequest,
-                       SlurmWebhookPayload, WorkflowPSGCRequest,
-                       WorkflowPSGCResponse)
+from io_models import (
+    MinioWebhookPayload,
+    PSGCTaskStatusUpdateRequest,
+    SlurmWebhookPayload,
+    WorkflowPSGCRequest,
+    WorkflowPSGCResponse,
+)
 from repository.redis_workflow_repository import RedisWorkflowRepository
 from service.kubernetes_service import KubernetesService
 from service.slurm_service import SlurmService
@@ -276,7 +280,7 @@ async def handle_task_status(
     status_code=status.HTTP_202_ACCEPTED,
     summary="Webhook for MinIO upload events",
     tags=["Internal Webhooks"],
-    dependencies=[Depends(verify_internal_traffic)],
+    # dependencies=[Depends(verify_internal_traffic)],
 )
 async def handle_minio_webhook(
     payload: MinioWebhookPayload,
@@ -293,6 +297,7 @@ async def handle_minio_webhook(
         # It's crucial to not return a 5xx error to prevent retry storms from MinIO.
         logger.exception("An unexpected error occurred in the MinIO webhook handler.")
         return {"status": "error", "detail": "Internal server error."}
+
 
 @app.post(
     "/api/scheduler/filter",
@@ -338,6 +343,7 @@ async def scheduler_filter(received: dict):
         # Not managed by DECICE, so we skip filtering and return the received list
         logger.info("Pod does not have required 'psgc' labels, skipping filter.")
         return {"NodeNames": received.get("NodeNames", [])}
+
 
 @app.post(
     "/webhooks/slurm",

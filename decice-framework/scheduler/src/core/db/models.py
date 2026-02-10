@@ -60,22 +60,24 @@ class EvaluationJob(Base):
     __tablename__ = "evaluation_jobs"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    
+
     # Inputs
-    scheduler_name: Mapped[str] = mapped_column(String) # The Model being tested
-    dataset_name: Mapped[str] = mapped_column(String)   # The Test Set
-    
+    scheduler_name: Mapped[str] = mapped_column(String)  # The Model being tested
+    dataset_name: Mapped[str] = mapped_column(String)  # The Test Set
+
     # Status
     status: Mapped[str] = mapped_column(String, default="queued")
-    
+
     # Results (The Report Card)
     optimality_rate: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     avg_regret: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     avg_ai_reward: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    
+
     # Detailed JSON report (per-scenario breakdown if needed)
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )

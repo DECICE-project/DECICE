@@ -7,12 +7,22 @@ from aiopromql.models.core import MetricLabelSet, TimeSeries
 
 from models.models import Device, Link, Metrics, Node, Vertexpool
 
-from .promql_queries import (BANDWIDTH, CPU_CORES, CPU_USAGE, FREE_DISK_GB,
-                             MEMORY_USAGE, TOTAL_DISK_GB, TOTAL_MEMORY,
-                             VP_DEVICE_INFO, VP_LABELS, VP_NODE_INFO,
-                             get_cluster_info_queries, get_node_info_queries,
-                             get_power_consumption_queries,
-                             get_vertexpool_links_string)
+from .promql_queries import (
+    BANDWIDTH,
+    CPU_CORES,
+    CPU_USAGE,
+    FREE_DISK_GB,
+    MEMORY_USAGE,
+    TOTAL_DISK_GB,
+    TOTAL_MEMORY,
+    VP_DEVICE_INFO,
+    VP_LABELS,
+    VP_NODE_INFO,
+    get_cluster_info_queries,
+    get_node_info_queries,
+    get_power_consumption_queries,
+    get_vertexpool_links_string,
+)
 
 
 def normalize_url(url: str, default_scheme="http") -> str:
@@ -24,14 +34,12 @@ def normalize_url(url: str, default_scheme="http") -> str:
     return urlunparse(parsed)
 
 
-# TODO: Populate id fields for Node with UID instead of nodename
 class NodeService:
     def __init__(self, prometheus_url: str) -> None:
         self.url = normalize_url(prometheus_url)
         self._node_dict: dict[str, Node] = {}
-        self.node_info_query = (
-            {}
-        )  # Dictionary to hold node_info queries and mapping to node_info keys
+        self.node_info_query = {}
+
         self.node_metric_query_to_attr = {
             BANDWIDTH: "network_bandwidth_mbps",
             CPU_CORES: "cpu_cores",
@@ -41,10 +49,10 @@ class NodeService:
             TOTAL_DISK_GB: "total_disk_gb",
             TOTAL_MEMORY: "mem_total",
         }
+
         power_watts_list = get_power_consumption_queries()
         self.add_node_metric_query(power_watts_list, "power_watts")
         self.apply_node_info_queries()
-        # self.add_node_info_query(anomaly_score := "decice_node_anomaly_score", "anomaly_score")
 
     def apply_node_info_queries(self):
         """Applies node info queries from config to the service."""
@@ -53,23 +61,11 @@ class NodeService:
             self._add_node_info_query(query_config.promql, query_config.field_name)
 
     def add_node_metric_query(self, query_list: list[str], attr: str):
-        """Adds PromQL queries to node_metric_query_to_attr. PromQL query results should have the label nodename.
-
-        Args:
-            query_list (list[str]): PromQL queries to be fetched from Prometheus.
-            attr (str): Correspoinding attribute name in Node.Metrics
-        """
         for query in query_list:
             if query not in self.node_metric_query_to_attr:
                 self.node_metric_query_to_attr[query] = attr
 
     def _add_node_info_query(self, query: str, dict_key: str):
-        """Adds PromQL query to node_info_query. PromQL query results should have the label nodename.
-
-        Args:
-            query (str): PromQL query to be fetched from Prometheus.
-            dict_key (str): Corresponding key in Node.node_info dictionary.
-        """
         if query not in self.node_info_query:
             self.node_info_query[query] = dict_key
 
@@ -80,67 +76,62 @@ class NodeService:
         value: float | None = None,
         node_info_dict_key: str | None = None,
     ):
-        "Given the nodename updates the node, if it doesnt exist creates the node"
+        nodename = nodename.lower()
         if nodename not in self._node_dict:
             self._node_dict[nodename] = Node(
                 name=nodename, metrics=Metrics(), id=nodename
             )
-        # if this is additional node_info, we need to update the node_info dictionary
+
         if attr_name == "node_info" and value is not None:
-            # get the dictionary from attr_name
-            node: Node = self._node_dict.get(nodename)
-            if not node.node_info:
+            node = self._node_dict[nodename]
+            if node.node_info is None:
                 node.node_info = {}
             if node_info_dict_key:
                 node.node_info[node_info_dict_key] = value
-        # else if this is a base metric, we update the metrics directly
-        elif attr_name and value:
-            node: Node = self._node_dict.get(nodename)
+
+        elif attr_name and value is not None:
+            node = self._node_dict[nodename]
+            # Clamp utilization metrics to valid ranges [0, 100]
+            if attr_name in ["util", "mem_util"]:
+                value = max(0.0, min(100.0, float(value)))
+
             setattr(node.metrics, attr_name, value)
 
     async def pull_metrics(self):
-        """Fetches metrics all at once via a network calls to Prometheus and updates self._node_dict
-
-        All metrics should have "nodename" label
-        """
+        """Fetches metrics all at once via network calls and updates _node_dict."""
         async with PrometheusAsync(self.url, timeout=10) as client:
             queries = list(self.node_metric_query_to_attr.keys()) + list(
                 self.node_info_query.keys()
             )
             tasks = [client.query(q) for q in queries]
             responses = await asyncio.gather(*tasks)
+
             for query, resp in zip(queries, responses):
-                node_info_key = None
-                if query in self.node_info_query:
-                    node_info_key = self.node_info_query[query]
-                    att = "node_info"
-                else:
-                    att = self.node_metric_query_to_attr[query]
+                node_info_key = self.node_info_query.get(query)
+                att = (
+                    "node_info"
+                    if node_info_key
+                    else self.node_metric_query_to_attr.get(query)
+                )
+
                 metric_map = resp.to_metric_map()
                 for labels, timeseries in metric_map.items():
                     labels_dict = labels.dict
                     nodename = labels_dict.get("nodename")
-                    # nodename = labels.get("nodename").lower()
 
                     if not nodename:
                         continue
 
-                    nodename = nodename.lower()
                     value = timeseries.latest().value
-                    if node_info_key:  # for node_info values
-                        self._upsert_node(
-                            nodename, att, value, node_info_dict_key=node_info_key
-                        )
-                    else:  # for base metrics
-                        self._upsert_node(nodename, att, value)
+                    self._upsert_node(
+                        nodename, att, value, node_info_dict_key=node_info_key
+                    )
 
     def get_node(self, nodename: str) -> Node:
-        """Returns pydantic object for given nodename"""
-        return self._node_dict[nodename]
+        return self._node_dict[nodename.lower()]
 
     def pop_node(self, nodename: str) -> Node:
-        """Returns the pydantic object for the given nodename and removes it from the dictionary."""
-        return self._node_dict.pop(nodename)
+        return self._node_dict.pop(nodename.lower())
 
 
 class VertexPoolService:
@@ -170,62 +161,78 @@ class VertexPoolService:
                     metric_dict = labels.dict
                     nodename = metric_dict.get("nodename")
                     if nodename:
-                        self._nodes._upsert_node(nodename.lower())
+                        self._nodes._upsert_node(nodename)
                     list_values.append(metric_dict)
 
     def finalize_vertexpools(self) -> list[Vertexpool]:
-        """Returns populated Vertexpools"""
+        """Returns populated Vertexpools."""
         vertexpool_dict: dict[str, Vertexpool] = {}
-        # process vertexpool and its labels
+
+        # Initialize vertexpools from discovered labels
         for vp in self._vertexpools_labels:
             vp_id = vp.get("vertexpool_id")
+            if not vp_id:
+                continue
+
             vertexpool = Vertexpool(
                 id=vp_id,
                 nodes=[],
                 devices=[],
             )
-            vertexpool_label_string = vp.get("vertexpool_labels")
-            if vertexpool_label_string:
-                vertexpool.vertexpool_labels = json.loads(vertexpool_label_string)
-            else:
-                vertexpool.vertexpool_labels = None
+            labels_raw = vp.get("vertexpool_labels")
+            if labels_raw:
+                try:
+                    vertexpool.vertexpool_labels = json.loads(labels_raw)
+                except json.JSONDecodeError:
+                    vertexpool.vertexpool_labels = None
+
             vertexpool_dict[vp_id] = vertexpool
 
-        # insert nodes
+        # Assign nodes to their respective vertexpools
         for node_metric in self._node_mappings:
             nodename = node_metric.get("nodename")
-            vertexpool_id = node_metric.get("vertexpool_id")
+            vp_id = node_metric.get("vertexpool_id")
+
+            if not nodename or not vp_id:
+                continue
+
             try:
+                # Node Service keys are lowercase, pop_node handles this
                 node = self._nodes.pop_node(nodename)
+                if vp_id in vertexpool_dict:
+                    vertexpool_dict[vp_id].nodes.append(node)
+                else:
+                    vertexpool_dict[vp_id] = Vertexpool(
+                        id=vp_id, nodes=[node], devices=[]
+                    )
             except KeyError:
                 continue
-            vertexpool_dict[vertexpool_id].nodes.append(node)
 
-        # populate devices
+        # Populate devices
         for dev in self._devices_metrics:
             dev_id = dev.get("device_id")
-            dev_name = dev.get("devicename")
-            dev_labels_string = dev.get("device_labels")
-            if dev_labels_string:
-                device_labels = json.loads(dev_labels_string)
-            else:
-                device_labels = None
-            device_vp_id = dev.get("vertexpool_id")
+            dev_vp_id = dev.get("vertexpool_id")
+            if not dev_id or not dev_vp_id:
+                continue
 
-            device = Device(id=dev_id, name=dev_name, labels=device_labels)
-            vertexpool_dict[device_vp_id].devices.append(device)
+            labels_raw = dev.get("device_labels")
+            device_labels = json.loads(labels_raw) if labels_raw else None
 
-        # Handle remaining nodes that were not associated with any vertexpool
+            device = Device(id=dev_id, name=dev.get("devicename"), labels=device_labels)
+            if dev_vp_id in vertexpool_dict:
+                vertexpool_dict[dev_vp_id].devices.append(device)
+
+        # Handle orphaned nodes
         if self._nodes._node_dict:
-            unassigned_vertices = vertexpool_dict.get(None)
-            if not unassigned_vertices:
-                unassigned_vertices = Vertexpool(id=None, nodes=[], devices=[])
-                vertexpool_dict[None] = unassigned_vertices
+            unassigned = vertexpool_dict.get(None)
+            if not unassigned:
+                unassigned = Vertexpool(id="unassigned", nodes=[], devices=[])
+                vertexpool_dict["unassigned"] = unassigned
 
-        for node in self._nodes._node_dict.values():
-            unassigned_vertices.nodes.append(node)
+            for node in list(self._nodes._node_dict.values()):
+                unassigned.nodes.append(node)
 
-        return vertexpool_dict.values()
+        return list(vertexpool_dict.values())
 
 
 class LinkService:
@@ -257,21 +264,17 @@ class LinkService:
         links = []
         for labels, timeseries in self._link_metric.items():
             labels_dict = labels.dict
-            vertexpool_id_source: str = labels_dict.get("self_vertexpool_id")
-            vertexpool_id_dest: str = labels_dict.get("target_vertexpool_id")
-            # vertexpool_id_source: str = labels.get("self_vertexpool_id")
-            # vertexpool_id_dest: str = labels.get("target_vertexpool_id")
+            v_a = labels_dict.get("self_vertexpool_id")
+            v_b = labels_dict.get("target_vertexpool_id")
 
-            # Ensure both required labels were found before proceeding
-            if not vertexpool_id_source or not vertexpool_id_dest:
+            if not v_a or not v_b:
                 continue
 
-            latency: float = timeseries.latest().value
             links.append(
                 Link(
-                    vertexpool_a_id=vertexpool_id_source,
-                    vertexpool_b_id=vertexpool_id_dest,
-                    network_delay_ms=latency,
+                    vertexpool_a_id=v_a,
+                    vertexpool_b_id=v_b,
+                    network_delay_ms=timeseries.latest().value,
                 )
             )
         return links
@@ -286,58 +289,37 @@ class CLusterInfoService:
         self._apply_cluster_info_queries()
 
     def _apply_cluster_info_queries(self):
-        """Applies cluster info queries from config to the service."""
         cluster_info_queries = get_cluster_info_queries()
-        for query_config in cluster_info_queries:
-            if (
-                query_config.promql,
-                query_config.field_name,
-                query_config.label_key,
-            ) not in self.cluster_info_query:
-                self.cluster_info_query[
-                    (
-                        query_config.promql,
-                        query_config.field_name,
-                        query_config.label_key,
-                    )
-                ] = {}
+        for q in cluster_info_queries:
+            key = (q.promql, q.field_name, q.label_key)
+            if key not in self.cluster_info_query:
+                self.cluster_info_query[key] = {}
 
     async def fetch_cluster_info(self):
-        """Fetches cluster info metrics all at once via a network calls to Prometheus and updates self.cluster_info_query"""
         async with PrometheusAsync(self.url, timeout=10) as client:
             queries = [key[0] for key in self.cluster_info_query.keys()]
             tasks = [client.query(q) for q in queries]
             responses = await asyncio.gather(*tasks)
-            for (query, field_name, label_key), resp in zip(
+            for (q, field_name, label_key), resp in zip(
                 self.cluster_info_query.keys(), responses
             ):
-                metric_map = resp.to_metric_map()
-                self.cluster_info_query[(query, field_name, label_key)].clear()
-                self.cluster_info_query[(query, field_name, label_key)].update(
-                    metric_map
+                self.cluster_info_query[(q, field_name, label_key)].clear()
+                self.cluster_info_query[(q, field_name, label_key)].update(
+                    resp.to_metric_map()
                 )
 
     def process(self) -> dict:
         cluster_info: dict = {}
-        for (
-            query,
-            field_name,
-            label_key,
-        ), metric_map in self.cluster_info_query.items():
+        for (q, field_name, label_key), metric_map in self.cluster_info_query.items():
             if label_key is None:
-                # Direct mapping to field_name
-                for labels, timeseries in metric_map.items():
-                    value: float = timeseries.latest().value
-                    cluster_info[field_name] = value
+                for _, ts in metric_map.items():
+                    cluster_info[field_name] = ts.latest().value
             else:
-                # Mapping by label values
                 field_dict: dict = {}
-                for labels, timeseries in metric_map.items():
-                    labels_dict = labels.dict
-                    label_value = labels_dict.get(label_key)
-                    if not label_value:
-                        continue
-                    value: float = timeseries.latest().value
-                    field_dict[label_value] = value
+                for labels, ts in metric_map.items():
+                    l_dict = labels.dict
+                    val = l_dict.get(label_key)
+                    if val:
+                        field_dict[val] = ts.latest().value
                 cluster_info[field_name] = field_dict
         return cluster_info

@@ -6,8 +6,12 @@ from config.config import get_settings
 
 from ..data_processing import DataTransformer
 from ..feature_engineer import FeatureEngineer
-from . import (aggregate_feature_registry, discover_features,
-               node_feature_registry, task_feature_registry)
+from . import (
+    aggregate_feature_registry,
+    discover_features,
+    node_feature_registry,
+    task_feature_registry,
+)
 
 logger = logging.getLogger(__name__)
 

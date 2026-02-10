@@ -2,18 +2,20 @@ from fastapi import APIRouter, status, Depends, HTTPException, Query
 from datetime import datetime, timedelta
 import json
 
-from digital_twin.core.controller import DTCController, get_dtc_controller
-from digital_twin.core.data_model import Node, Link, Job, DeciceDigitalTwin, DeciceDigitalTwinV1
-from digital_twin.core.model_utils import get_all_nodes, get_all_links, get_all_jobs
-from digital_twin.core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
-from digital_twin.config.config import service_settings, ServiceSettings
+from core.controller import DTCController, get_dtc_controller
+from core.data_model import Node, Link, Job, DeciceDigitalTwin, DeciceDigitalTwinV1
+from core.model_utils import get_all_nodes, get_all_links, get_all_jobs
+from core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
+from config.config import service_settings, ServiceSettings
 from influxdb_client.rest import ApiException
 
 router = APIRouter()
 
 
 @router.post("/model_core/", status_code=status.HTTP_201_CREATED)
-async def write_cluster_data(data: DeciceDigitalTwinV1 | DeciceDigitalTwin, controller: DTCController = Depends(get_dtc_controller)):
+async def write_cluster_data(
+    data: DeciceDigitalTwinV1 | DeciceDigitalTwin, controller: DTCController = Depends(get_dtc_controller)
+):
     dict = data.model_dump()
     # if isinstance(data, DeciceDigitalTwinV1): cast it to DeciceDigitalTwin
     if isinstance(data, DeciceDigitalTwinV1):
@@ -28,6 +30,7 @@ async def write_cluster_data(data: DeciceDigitalTwinV1 | DeciceDigitalTwin, cont
     controller.update_digital_twin(data)
     return status.HTTP_201_CREATED
 
+
 @router.get("/model_core/", status_code=status.HTTP_200_OK)
 async def get_data(controller: DTCController = Depends(get_dtc_controller)) -> DeciceDigitalTwinV1 | None:
     # cast DeciceDigitalTwin to DeciceDigitalTwinV1
@@ -40,6 +43,7 @@ async def get_data(controller: DTCController = Depends(get_dtc_controller)) -> D
         )
         return data_converted
     return controller.digital_twin
+
 
 @router.get("/settings/", status_code=status.HTTP_200_OK)
 async def get_settings() -> ServiceSettings:

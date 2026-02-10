@@ -2,9 +2,17 @@ from uuid import uuid4
 
 import pytest
 
-from core.schemas import (ClusterState, HardwareRequirements, Link, Node,
-                          NodeInfo, NodeMetrics, ScheduleRequest, Task,
-                          VertexPool)
+from core.schemas import (
+    ClusterState,
+    HardwareRequirements,
+    Link,
+    Node,
+    NodeInfo,
+    NodeMetrics,
+    ScheduleRequest,
+    Task,
+    VertexPool,
+)
 
 
 @pytest.fixture

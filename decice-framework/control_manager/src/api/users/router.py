@@ -9,9 +9,15 @@ from auth.dependencies import get_current_active_user
 from auth.role_manager import RoleManager
 from auth.security import AuthService, get_auth_service
 from domain.token_schemas import Token
-from domain.user_schemas import (PlatformIdentityCreate,
-                                 PlatformIdentityResponse, User, UserResponse,
-                                 UserResponseAndToken, UserRole, UserUpdate)
+from domain.user_schemas import (
+    PlatformIdentityCreate,
+    PlatformIdentityResponse,
+    User,
+    UserResponse,
+    UserResponseAndToken,
+    UserRole,
+    UserUpdate,
+)
 from services.user_service import UserService, get_user_service
 from session.session_management import UserSession, get_user_session
 

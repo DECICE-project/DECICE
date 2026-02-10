@@ -11,8 +11,7 @@ from core.db.models import TrainingDataset
 from core.storage.interface import IStorageProvider
 from core.storage.local import LocalStorageProvider
 from core.training.generator import ScenarioGenerator
-from repositories.dataset_repository import (DatasetRepository,
-                                             get_data_repository)
+from repositories.dataset_repository import DatasetRepository, get_data_repository
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class DataService:
         """
         Generates synthetic data and stores it via the storage provider and repository.
         """
-        # 1. Logic Check via Repository
+        # Logic Check via Repository
         existing = await self.repo.get_by_name(name)
         if existing:
             return {
@@ -38,7 +37,7 @@ class DataService:
 
         generated_count = 0
 
-        # 2. Generate and Store
+        # Generate and Store
         # We use a temporary directory to generate the files first.
         # This decouples the Generator (which writes to disk) from our Storage Provider (which might be S3).
         try:
@@ -64,7 +63,7 @@ class DataService:
             self.storage.delete_folder(name)
             raise e
 
-        # 3. Metadata Write via Repository
+        # Metadata Write via Repository
         new_dataset = TrainingDataset(
             name=name,
             file_count=generated_count,
@@ -84,12 +83,12 @@ class DataService:
         }
 
     async def upload_dataset(self, name: str, files: list[UploadFile]) -> dict:
-        # 1. Logic Check via Repository
+        # Logic Check via Repository
         existing = await self.repo.get_by_name(name)
         if existing:
             return {"status": "error", "message": f"Dataset '{name}' already exists."}
 
-        # 2. Physical Write via Storage Adapter
+        # Physical Write via Storage Adapter
         saved_count = 0
         try:
             for file in files:
@@ -105,7 +104,7 @@ class DataService:
             self.storage.delete_folder(name)
             raise e
 
-        # 3. Metadata Write via Repository
+        # Metadata Write via Repository
         new_dataset = TrainingDataset(
             name=name,
             file_count=saved_count,
@@ -124,20 +123,19 @@ class DataService:
         if not dataset:
             return {"status": "error", "message": "Dataset not found"}
 
-        # 1. Delete physical files
+        # Delete physical files
         self.storage.delete_folder(name)
 
-        # 2. Delete DB record
+        # Delete DB record
         await self.repo.delete(dataset)
 
         return {"status": "deleted", "dataset_name": name}
 
 
-# # Dependency Provider Functions
+# Dependency Provider Functions
 def get_storage_provider() -> IStorageProvider:
-    # This is where you would toggle between Local and S3 based on env vars
     settings = get_settings()
-    # return S3StorageProvider(bucket=settings.S3_BUCKET) if settings.USE_S3 else ...
+
     return LocalStorageProvider(root_dir=settings.DATA_BASE_DIR / "datasets")
 
 

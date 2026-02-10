@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
 
         app.state.startup_healthy = True
         logger.info(
-            f"{"\033[92m"}Lifespan: Startup Complete{"\033[0m"}",
+            f"{'\033[92m'}Lifespan: Startup Complete{'\033[0m'}",
             extra={"event": "startup_complete"},
         )
     except Exception as e:
@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info(
-        f"{"\033[92m"}Lifespan: Shutdown Sequence Starting{"\033[0m"}",
+        f"{'\033[92m'}Lifespan: Shutdown Sequence Starting{'\033[0m'}",
         extra={"event": "shutdown"},
     )
 
@@ -123,7 +123,7 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("No shared HTTP client found in app state during shutdown.")
 
-    logging.info(f"{"\033[92m"}Lifespan: Shutdown Complete{"\033[0m"}")
+    logging.info(f"{'\033[92m'}Lifespan: Shutdown Complete{'\033[0m'}")
 
 
 # FastAPI App Instantiation

@@ -2,6 +2,7 @@ import sys
 from prophet import Prophet
 import pandas as pd
 
+
 def load_data():
     f2021 = "dataset/IT-NO_2021_hourly.csv"
     f2022 = "dataset/IT-NO_2022_hourly.csv"
@@ -15,21 +16,20 @@ def load_data():
 
     df = pd.concat([df1, df2, df3, df4], axis=0)
     df.sort_index(inplace=True)
-    df.index.rename('timestamp', inplace=True) # Index renaming
-    df = df[['Carbon Intensity gCO₂eq/kWh (direct)']]
+    df.index.rename("timestamp", inplace=True)  # Index renaming
+    df = df[["Carbon Intensity gCO₂eq/kWh (direct)"]]
     print(df.columns)
     df = df.reset_index()
-    df.rename(columns={'timestamp':'ds', 
-                       'Carbon Intensity gCO₂eq/kWh (direct)': 'y'}, 
-                       inplace=True) # Column renaming
-    
+    df.rename(columns={"timestamp": "ds", "Carbon Intensity gCO₂eq/kWh (direct)": "y"}, inplace=True)  # Column renaming
+
     return df
 
 
 df = load_data()
 # Add floor and cap columns
-df['floor'] = 65
-df['cap'] = 500
+df["floor"] = 65
+df["cap"] = 500
+
 
 def train_and_save_model(MODEL_PATH):
     df = load_data()
@@ -37,11 +37,12 @@ def train_and_save_model(MODEL_PATH):
         yearly_seasonality=True,
         weekly_seasonality=True,
         daily_seasonality=True,
-        changepoint_prior_scale = 0.05,
-        seasonality_prior_scale = 1.0
+        changepoint_prior_scale=0.05,
+        seasonality_prior_scale=1.0,
     )
     model.fit(df)
     import joblib
+
     joblib.dump(model, MODEL_PATH)
 
 

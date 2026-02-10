@@ -3,8 +3,14 @@ from enum import Enum
 from typing import Annotated, Any, Literal, Optional, Union
 from uuid import UUID
 
-from pydantic import (BaseModel, ConfigDict, Field, field_serializer,
-                      field_validator, model_validator)
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 
 class MinioEventRecord(BaseModel):
@@ -93,6 +99,7 @@ class WorkflowPSGCRequest(BaseModel):
     user_id: UUID
     filename: Optional[str] = None
 
+    annotations: Optional[dict[str, Any]] = {}
     tasks: list[
         Annotated[
             Union[

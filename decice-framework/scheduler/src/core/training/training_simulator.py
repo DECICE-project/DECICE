@@ -107,13 +107,13 @@ class TrainingSimulator:
         """
         Generates one scenario, asks AI for action, calculates reward, stores experience.
         """
-        # 1. Get a Request (Either from Disk or Generator)
+        # Get a Request (Either from Disk or Generator)
         request = self._get_next_scenario()
         if not request:
             logger.warning("VTE: Could not generate/load a scenario. Skipping episode.")
             return
 
-        # 2. Data Prep (Transform + Fuzzy)
+        # Data Prep (Transform + Fuzzy)
         # Transform to DataFrames
         tasks_df, nodes_df, _ = self.ai_scheduler.data_transformer.transform(request)
 
@@ -129,7 +129,7 @@ class TrainingSimulator:
             t_id = str(t.get("task_id"))
             t["suitable_node_ids"] = suitable_map.get(t_id, [])
 
-        # 3. AI Action
+        # AI Action
         # The AI looks at the request and predicts the best strategy name
         strategy_name = self.ai_scheduler.predict_best_strategy_name(
             request, deterministic=False
@@ -140,14 +140,14 @@ class TrainingSimulator:
         if not strategy_name:
             strategy_name = "round_robin"  # Fallback
 
-        # 4. Environment Step (Virtual Execution via Kairos)
+        # Environment Step (Virtual Execution via Kairos)
         # We assume the environment is the "Oracle" execution of that strategy
         _, throughput = self.kairos.run_strategy(
             strategy_name, tasks_dicts, nodes_dicts
         )
         runtime_ms = self.kairos.get_runtime() or 0.0
 
-        # 5. Reward & Store
+        # Reward & Store
         self.ai_scheduler.collect_experience(
             request, strategy_name, runtime_ms, throughput or 0.0
         )
@@ -159,7 +159,7 @@ class TrainingSimulator:
             files = list(self.dataset_path.glob("*.json"))
             if files:
                 # Randomly sample a file from the dataset to simulate variety
-                # (In a strict epoch, you might want to iterate sequentially,
+                # (In a strict epoch, we might want to iterate sequentially,
                 # but random sampling is fine for RL experience replay)
                 random_file = random.choice(files)
                 try:

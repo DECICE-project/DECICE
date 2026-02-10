@@ -6,8 +6,7 @@ import joblib
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from core.features.factory import (create_data_transformer,
-                                   create_feature_engineer)
+from core.features.factory import create_data_transformer, create_feature_engineer
 from core.schemas import ScheduleRequest
 
 logger = logging.getLogger(__name__)
@@ -24,8 +23,8 @@ class ScalerManager:
             f"Auto-Calibration: Fitting scalers using dataset at {dataset_path}..."
         )
 
-        # 1. Setup minimal pipeline to extract raw features
-        # We pass None for scalers_file_path to force raw output
+        # Setup minimal pipeline to extract raw features
+        # Pass None for scalers_file_path to force raw output
         transformer = create_data_transformer()
         raw_engineer = create_feature_engineer(scalers_file_path=None)
 
@@ -36,7 +35,7 @@ class ScalerManager:
         if not files:
             raise ValueError(f"No JSON files found in {dataset_path} to fit scalers.")
 
-        # 2. Extract features from every file in the dataset
+        # Extract features from every file in the dataset
         # Limit to e.g., 500 files to save time if dataset is huge
         files_to_process = files[:500]
 
@@ -62,7 +61,7 @@ class ScalerManager:
                 "Could not extract any valid feature vectors for calibration."
             )
 
-        # 3. Fit Scikit-Learn Scalers
+        # Fit Scikit-Learn Scalers
         # Shape: (N_samples, N_features)
         X = np.array(collected_vectors)
 
@@ -75,7 +74,7 @@ class ScalerManager:
             scaler.fit(feature_column)
             scalers_dict[name] = scaler
 
-        # 4. Save to Disk
+        # Save to Disk
         output_path.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(scalers_dict, output_path)
         logger.info(f"Scalers saved to {output_path}")

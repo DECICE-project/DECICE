@@ -2,8 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from core.features.aggregate import (AvgNodeCpuUtil, AvgNodeDiskUtil,
-                                     NumPendingJobs, TotalClusterCpuCores)
+from core.features.aggregate import (
+    AvgNodeCpuUtil,
+    AvgNodeDiskUtil,
+    NumPendingJobs,
+    TotalClusterCpuCores,
+)
 from core.schemas import LatencyMatrix
 
 

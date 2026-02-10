@@ -3,8 +3,7 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 
-from clients.promql_wrapper.client import (PromQLWrapperClient,
-                                           get_promql_wrapper_client)
+from clients.promql_wrapper.client import PromQLWrapperClient, get_promql_wrapper_client
 
 
 def test_get_promql_wrapper_client_success():
@@ -21,7 +20,6 @@ def test_get_promql_wrapper_client_success():
     with patch(
         "clients.promql_wrapper.client.get_settings", return_value=mock_settings
     ):
-
         client_instance = get_promql_wrapper_client(client=mock_http_client)
 
     assert isinstance(client_instance, PromQLWrapperClient)

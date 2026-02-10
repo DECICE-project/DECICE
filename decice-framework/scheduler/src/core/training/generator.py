@@ -187,7 +187,7 @@ class ScenarioGenerator:
 
             # Pools and Links logic (simplified for brevity)
             pools = [
-                {"id": f"pool-{p+1}", "nodes": [], "vertexpool_labels": {}}
+                {"id": f"pool-{p + 1}", "nodes": [], "vertexpool_labels": {}}
                 for p in range(num_pools)
             ]
             for idx, node in enumerate(nodes):

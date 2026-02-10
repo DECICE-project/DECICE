@@ -4,6 +4,7 @@ K8s InferenceRequest encoder:
 - Fit:   k8s_encode.py fit --input data.ndjson --out encoder.joblib [--no-sbert]
 - Trans: k8s_encode.py transform --input data.ndjson --encoder encoder.joblib --out features.parquet
 """
+
 import argparse, json, os, sys, hashlib
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Tuple
@@ -18,6 +19,7 @@ from joblib import dump, load
 # --- optional SBERT (disable with --no-sbert)
 try:
     from sentence_transformers import SentenceTransformer
+
     _SBERT_AVAILABLE = True
 except Exception:
     _SBERT_AVAILABLE = False
@@ -30,13 +32,12 @@ CAT_KEYS = ("runtime_class", "node_type")
 NUM_KEYS = ("gpu_count", "init_container_count", "sidecar_count")
 
 # Per-container resources (flattened as sums; easy baseline)
-RES_KEYS = (
-    "req_cpu_mcpu", "req_mem_mib",
-    "lim_cpu_mcpu", "lim_mem_mib"
-)
+RES_KEYS = ("req_cpu_mcpu", "req_mem_mib", "lim_cpu_mcpu", "lim_mem_mib")
+
 
 def _sha16(obj: Any) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
 
 def _text_bundle(ir: Dict[str, Any]) -> str:
     """Concatenate semantically meaningful strings for SBERT."""
@@ -44,11 +45,12 @@ def _text_bundle(ir: Dict[str, Any]) -> str:
     # top
     for k in TEXT_KEYS_TOP:
         v = ir.get(k)
-        if v: parts.append(f"{k}:{v}")
+        if v:
+            parts.append(f"{k}:{v}")
     # labels/annotations
-    for k,v in sorted((ir.get("labels") or {}).items()):
+    for k, v in sorted((ir.get("labels") or {}).items()):
         parts.append(f"label:{k}={v}")
-    for k,v in sorted((ir.get("annotations") or {}).items()):
+    for k, v in sorted((ir.get("annotations") or {}).items()):
         parts.append(f"ann:{k}={v}")
     # containers
     for c in ir.get("containers") or []:
@@ -172,13 +174,16 @@ class K8sEncoder:
         return X.astype(np.float32), meta_df
 
     def save(self, path: str):
-        dump({
-            "use_sbert": self.use_sbert,
-            "sbert_model_name": self.sbert_model_name,
-            "sbert_name_": self.sbert_name_,
-            "scaler": self.scaler,
-            "ohe": self.ohe,
-        }, path)
+        dump(
+            {
+                "use_sbert": self.use_sbert,
+                "sbert_model_name": self.sbert_model_name,
+                "sbert_name_": self.sbert_name_,
+                "scaler": self.scaler,
+                "ohe": self.ohe,
+            },
+            path,
+        )
 
     @classmethod
     def load(cls, path: str) -> "K8sEncoder":
@@ -196,13 +201,15 @@ def _read_ndjson(path: str) -> List[Dict[str, Any]]:
     with open(path, "r") as f:
         for line in f:
             line = line.strip()
-            if not line: continue
+            if not line:
+                continue
             try:
                 ir = json.loads(line)
                 rows.append(_flat_row(ir))
             except Exception as e:
                 print(f"[WARN] bad line skipped: {e}", file=sys.stderr)
     return rows
+
 
 def cmd_fit(args):
     rows = _read_ndjson(args.input)
@@ -214,6 +221,7 @@ def cmd_fit(args):
     enc.save(args.out)
     print(f"[OK] saved encoder to {args.out}")
 
+
 def cmd_transform(args):
     rows = _read_ndjson(args.input)
     enc = K8sEncoder.load(args.encoder)
@@ -224,6 +232,7 @@ def cmd_transform(args):
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     df.to_parquet(args.out, index=False)
     print(f"[OK] wrote {len(df)} rows to {args.out}; vector_dim={X.shape[1]}")
+
 
 def main():
     p = argparse.ArgumentParser()
@@ -241,8 +250,11 @@ def main():
     p_tr.add_argument("--out", required=True)
 
     args = p.parse_args()
-    if args.cmd == "fit": cmd_fit(args)
-    else: cmd_transform(args)
+    if args.cmd == "fit":
+        cmd_fit(args)
+    else:
+        cmd_transform(args)
+
 
 if __name__ == "__main__":
     main()

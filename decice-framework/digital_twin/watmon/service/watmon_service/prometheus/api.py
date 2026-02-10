@@ -63,9 +63,7 @@ async def get_raw_edges(
     interval: str = settings.promql.network_delay_range_selector,
     prometheus_connection: PrometheusAsync = Depends(prometheus_connection),
 ) -> list[UniDirectionalVertexMs]:
-    return await get_node_to_x_latency(
-        prometheus_connection, nodename, vertexpool_id, interval, True
-    )
+    return await get_node_to_x_latency(prometheus_connection, nodename, vertexpool_id, interval, True)
 
 
 @router.get("/expanded_vertexpools")
@@ -110,24 +108,16 @@ async def get_expanded_vertexpool_graph(
     raw_to_vertexpool_link_outer: list[UniDirectionalVertexpoolMs] = []
     remaining_links: list[UniDirectionalVertexpoolMs] = []
     if vertexpool_id:
-        inner_links = await get_raw_edges(
-            vertexpool_id=vertexpool_id, prometheus_connection=prometheus_connection
-        )
+        inner_links = await get_raw_edges(vertexpool_id=vertexpool_id, prometheus_connection=prometheus_connection)
 
         # find and remove the link with given vertexpool_id
         node_device_name_list: list[str] = []
-        if (
-            expanded_view.selected_vertexpool
-            and expanded_view.selected_vertexpool.nodes is not None
-        ):
+        if expanded_view.selected_vertexpool and expanded_view.selected_vertexpool.nodes is not None:
             for node in expanded_view.selected_vertexpool.nodes:
                 # check if node has attribute name
                 if hasattr(node, "nodename"):
                     node_device_name_list.append(node.nodename)
-        if (
-            expanded_view.selected_vertexpool
-            and expanded_view.selected_vertexpool.devices is not None
-        ):
+        if expanded_view.selected_vertexpool and expanded_view.selected_vertexpool.devices is not None:
             for device in expanded_view.selected_vertexpool.devices:
                 if hasattr(device, "name"):
                     node_device_name_list.append(device.name)
@@ -166,11 +156,7 @@ async def get_expanded_vertexpool_graph(
                     lastUpdated=link.lastUpdated,
                 )
             )
-        links = (
-            raw_to_vertexpool_link_outer
-            + remaining_links
-            + raw_to_vertexpool_link_inner
-        )
+        links = raw_to_vertexpool_link_outer + remaining_links + raw_to_vertexpool_link_inner
 
     return ExpandedGraph(
         links=links,

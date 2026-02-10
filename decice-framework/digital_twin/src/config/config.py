@@ -36,14 +36,18 @@ class ServiceSettings(BaseSettings):
     )
 
     influxdb: InfluxDBConfig | None = Field(
-        default_factory=lambda: InfluxDBConfig(
-            url=os.getenv("INFLUXDB_URL", ""),
-            token=os.getenv("INFLUXDB_TOKEN", ""),
-            bucket=os.getenv("INFLUXDB_BUCKET", ""),
-            org=os.getenv("INFLUXDB_ORG", ""),
+        default_factory=lambda: (
+            InfluxDBConfig(
+                url=os.getenv("INFLUXDB_URL", ""),
+                token=os.getenv("INFLUXDB_TOKEN", ""),
+                bucket=os.getenv("INFLUXDB_BUCKET", ""),
+                org=os.getenv("INFLUXDB_ORG", ""),
+            )
+            if all(
+                os.getenv(env_var) for env_var in ["INFLUXDB_TOKEN", "INFLUXDB_BUCKET", "INFLUXDB_ORG", "INFLUXDB_URL"]
+            )
+            else print("Could not read INFLUXDB vars from .env")
         )
-        if all(os.getenv(env_var) for env_var in ["INFLUXDB_TOKEN", "INFLUXDB_BUCKET", "INFLUXDB_ORG", "INFLUXDB_URL"])
-        else print("Could not read INFLUXDB vars from .env")
     )
 
 

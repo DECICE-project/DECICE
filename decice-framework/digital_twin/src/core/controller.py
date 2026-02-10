@@ -1,6 +1,6 @@
-from digital_twin.core.json_validation import DTCJsonValidation
-from digital_twin.core.time_series import DTCTimeSeries, TimeSeriesClient
-from digital_twin.core.data_model import DeciceDigitalTwin
+from core.json_validation import DTCJsonValidation
+from core.time_series import DTCTimeSeries, TimeSeriesClient
+from core.data_model import DeciceDigitalTwin
 
 # from core.json_validation import DTCJsonValidation
 
@@ -11,7 +11,7 @@ from digital_twin.core.data_model import DeciceDigitalTwin
 import json
 from typing import Union
 import argparse
-from digital_twin.config.config import service_settings
+from config.config import service_settings
 
 
 class DTCController:
@@ -31,8 +31,8 @@ class DTCController:
         self.initialized = True
 
         self.digital_twin: DeciceDigitalTwin = None
-        self.time_series_client = None 
-        
+        self.time_series_client = None
+
         if time_series_client:
             self.time_series_client = time_series_client
         elif service_settings.influxdb:

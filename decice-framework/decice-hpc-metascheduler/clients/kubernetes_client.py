@@ -2,15 +2,19 @@
 
 from typing import Dict, List, Any
 
+
 class KubernetesClient:
     """
     A client for interacting with the Kubernetes API to manage Volcano jobs.
     This is a placeholder implementation for the business layer's contract.
     """
-    def create_manager_pod(self, job_name: str, image: str, command: List[str], job_details: Dict[str, Any]) -> str:
+
+    def create_manager_pod(
+        self, job_name: str, image: str, command: List[str], job_details: Dict[str, Any]
+    ) -> str:
         """
         Creates a 'manager pod' in Kubernetes that will run the actual job.
-        
+
         Returns:
             The name of the created manager pod.
         """

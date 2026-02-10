@@ -133,6 +133,16 @@ class PsgcEngine:
         elif is_succeeded:
             final_status = TaskStatus.SUCCEEDED.value
             detail = "Job completed via K8s watcher."
+
+            # Release the PVC lock by deleting the completed job
+            job_name = job_object.metadata.name
+            try:
+                logger.info(
+                    f"Task {task_id} succeeded. Deleting K8s Job '{job_name}' to release PVC lock."
+                )
+                await self.k8s_service.delete_job(job_name, "default")
+            except Exception as e:
+                logger.warning(f"Failed to auto-delete successful job {job_name}: {e}")
         elif is_failed:
             final_status = TaskStatus.FAILED.value
             detail = "Job failed via K8s watcher."
@@ -548,7 +558,7 @@ class PsgcEngine:
             "required_gpu": task_data.get("required_gpu"),
         }
 
-        target_node = None # Default to None
+        target_node = None  # Default to None
 
         if not self.settings.SCHED_WEBHOOK:
             decision: ScheduleResponse = await self.cm_client.get_scheduling_decision(
@@ -659,9 +669,15 @@ class PsgcEngine:
         ]
         volume_mounts = [k8s_client.V1VolumeMount(name="workdir", mount_path="/data")]
 
-        if workflow_definition.get("annotations", {}).get(
+        storage_req = task_data.get("annotations", {}).get(
             "dev.decice.com/storage-request"
-        ):
+        )
+        if not storage_req:
+            storage_req = workflow_definition.get("annotations", {}).get(
+                "dev.decice.com/storage-request"
+            )
+
+        if storage_req:
             pvc_name = f"pvc-{workflow_id}"
             volumes[0] = k8s_client.V1Volume(
                 name="workdir",
@@ -670,9 +686,21 @@ class PsgcEngine:
                 ),
             )
 
+        # if workflow_definition.get("annotations", {}).get(
+        #     "dev.decice.com/storage-request"
+        # ):
+        #     pvc_name = f"pvc-{workflow_id}"
+        #     volumes[0] = k8s_client.V1Volume(
+        #         name="workdir",
+        #         persistent_volume_claim=k8s_client.V1PersistentVolumeClaimVolumeSource(
+        #             claim_name=pvc_name
+        #         ),
+        #     )
+
         if workflow_definition.get("filename"):
             filename = workflow_definition["filename"]
-            object_key = f"workflows/{workflow_id}/inputs/{filename}"
+            # object_key = f"workflows/{workflow_id}/inputs/{filename}"
+            object_key = f"{workflow_id}/inputs/{filename}"
             downloader = k8s_client.V1Container(
                 name="mc-downloader",
                 image="minio/mc",
@@ -680,13 +708,15 @@ class PsgcEngine:
                 args=[
                     "set -ex; "
                     "mc alias set myminio $MINIO_SERVER $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; "
-                    f"mc cp myminio/{object_key} /data/{filename}; "
+                    f"mc cp myminio/workflows/{object_key} /data/{filename}; "
                     "ls -l /data;"
                 ],
                 env=[
                     k8s_client.V1EnvVar(
                         name="MINIO_SERVER",
-                        value=f"http://{self.settings.MINIO_ENDPOINT}",
+                        # value=f"http://{self.settings.MINIO_ENDPOINT}",
+                        # NOTE: change this for production
+                        value="http://minio:9000",
                     ),
                     k8s_client.V1EnvVar(
                         name="MINIO_ACCESS_KEY", value=self.settings.MINIO_ACCESS_KEY
@@ -702,11 +732,16 @@ class PsgcEngine:
             if filename.lower().endswith(".zip"):
                 unzipper = k8s_client.V1Container(
                     name="unzipper",
-                    image="ubuntu:22.04",
+                    image="alpine:latest",
                     command=["sh", "-c"],
                     args=[
-                        "set -ex; apt-get update && apt-get install -y unzip; "
-                        f"unzip /data/{filename} -d /data; rm /data/{filename};"
+                        "set -ex; "
+                        "if [ ! -f /data/.unzipped ]; then "
+                        f"  unzip -o /data/{filename} -d /data/; "
+                        "  touch /data/.unzipped; "
+                        "else "
+                        "  echo 'Already unzipped'; "
+                        "fi"
                     ],
                     volume_mounts=volume_mounts,
                 )
@@ -723,13 +758,32 @@ class PsgcEngine:
             limits["nvidia.com/gpu"] = gpu_str
         resources = k8s_client.V1ResourceRequirements(requests=requests, limits=limits)
 
+        raw_command = task_data.get("command_str", "[]")
+        try:
+            # Try to parse as JSON (Argo/K8s style)
+            command_list = json.loads(raw_command)
+            # If it parsed as a single string, wrap it for sh -c
+            if isinstance(command_list, str):
+                command_list = ["sh", "-c", command_list]
+        except (json.JSONDecodeError, TypeError):
+            # It's a raw shell string (Snakemake style), wrap it for Kubernetes
+            command_list = ["sh", "-c", raw_command]
+
         main_container = k8s_client.V1Container(
             name="main-container",
             image=task_data.get("image"),
-            command=json.loads(task_data.get("command_str", "[]")),
+            command=command_list,
             resources=resources,
             volume_mounts=volume_mounts,
         )
+
+        # main_container = k8s_client.V1Container(
+        #     name="main-container",
+        #     image=task_data.get("image"),
+        #     command=json.loads(task_data.get("command_str", "[]")),
+        #     resources=resources,
+        #     volume_mounts=volume_mounts,
+        # )
 
         annotations = task_data.get("annotations", {})
 
@@ -752,7 +806,7 @@ class PsgcEngine:
             "init_containers": init_containers,
             "containers": [main_container],
             "volumes": volumes,
-            "restart_policy": "Never"
+            "restart_policy": "Never",
         }
 
         if target_node:

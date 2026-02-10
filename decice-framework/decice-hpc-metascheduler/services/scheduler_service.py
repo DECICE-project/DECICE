@@ -8,19 +8,24 @@ from .domain_models import Job
 from .exceptions import JobNotFoundError
 from clients.kubernetes_client import KubernetesClient
 from clients.slurm_client import SlurmClient
-from clients.prometheus_metrics_client import PrometheusMetricsClient, IntelligentSchedulerService
+from clients.prometheus_metrics_client import (
+    PrometheusMetricsClient,
+    IntelligentSchedulerService,
+)
+
 
 class SchedulerService:
     """
     The core business logic layer (Service Layer).
     It orchestrates the process of job submission, status checking, and listing.
     """
+
     def __init__(
         self,
         job_repository: JobRepository,
-        kubernetes_client: KubernetesClient, # Dependency Injection
-        slurm_client: SlurmClient,           # Dependency Injection
-        intelligent_scheduler: IntelligentSchedulerService = None  # Optional for intelligent scheduling
+        kubernetes_client: KubernetesClient,  # Dependency Injection
+        slurm_client: SlurmClient,  # Dependency Injection
+        intelligent_scheduler: IntelligentSchedulerService = None,  # Optional for intelligent scheduling
     ):
         self.job_repository = job_repository
         self.kubernetes_client = kubernetes_client
@@ -43,33 +48,37 @@ class SchedulerService:
         scheduler_target = submission_data["schedulerTarget"]
         if self.intelligent_scheduler and scheduler_target == "AUTO":
             # Use load-aware scheduling for AUTO mode
-            scheduler_target = await self.intelligent_scheduler.get_scheduling_recommendation(submission_data)
-        
+            scheduler_target = (
+                await self.intelligent_scheduler.get_scheduling_recommendation(
+                    submission_data
+                )
+            )
+
         # Step 2: Create the initial job record in our DB.
         job_data = self.job_repository.add(
             name=submission_data["name"],
             image=submission_data["image"],
             scheduler_target=scheduler_target,
-            user_id=user_id
+            user_id=user_id,
         )
-        
+
         # This is where Strategy #2's logic happens.
         # For the MVP, we assume the manager pod always runs on Kubernetes.
         # The manager pod itself will then decide whether to talk to Volcano or Slurm.
-        
+
         # Step 2: Create the manager pod in Kubernetes.
         manager_pod_name = self.kubernetes_client.create_manager_pod(
             job_name=job_data["name"],
-            image="my-manager-pod-image:latest", # This would be a predefined image
-            command=["python", "job_runner.py"], # The script inside the manager pod
-            job_details=submission_data # Pass the original job details to the pod
+            image="my-manager-pod-image:latest",  # This would be a predefined image
+            command=["python", "job_runner.py"],  # The script inside the manager pod
+            job_details=submission_data,  # Pass the original job details to the pod
         )
-        
+
         # Step 3: Update our job record with the manager pod's name for tracking.
         updated_job_data = self.job_repository.update(
-            job_id=job_data["jobId"], 
-            user_id=user_id, 
-            update_data={"manager_pod_name": manager_pod_name}
+            job_id=job_data["jobId"],
+            user_id=user_id,
+            update_data={"manager_pod_name": manager_pod_name},
         )
 
         return self._map_dict_to_domain(updated_job_data)
@@ -81,26 +90,31 @@ class SchedulerService:
         job_data = self.job_repository.get(job_id=job_id, user_id=user_id)
         if job_data is None:
             raise JobNotFoundError(f"Job with id {job_id} not found for this user.")
-        
+
         # Here, you could add logic to query the manager pod's status from Kubernetes
         # and update the job's status in the DB before returning it.
         # For now, we just return the stored status.
-        
+
         return self._map_dict_to_domain(job_data)
 
-    def list_jobs(self, user_id: str, limit: int, offset: int, status: Optional[str], name: Optional[str]) -> tuple[List[Job], int]:
+    def list_jobs(
+        self,
+        user_id: str,
+        limit: int,
+        offset: int,
+        status: Optional[str],
+        name: Optional[str],
+    ) -> tuple[List[Job], int]:
         """
         Lists jobs for a user with filtering and gets the total count.
         """
         job_dicts = self.job_repository.list(
-            user_id=user_id, 
-            limit=limit, 
-            offset=offset, 
-            status=status, 
-            name=name
+            user_id=user_id, limit=limit, offset=offset, status=status, name=name
         )
-        total_count = self.job_repository.count(user_id=user_id, status=status, name=name)
-        
+        total_count = self.job_repository.count(
+            user_id=user_id, status=status, name=name
+        )
+
         jobs = [self._map_dict_to_domain(d) for d in job_dicts]
-        
+
         return jobs, total_count

@@ -5,13 +5,13 @@ import numpy as np
 import pandas as pd
 
 
-
 def gnn_topic_creator(node_name):
     topic = f"org/cineca/cluster/marconi100/node/{node_name}/room/f/plugin/examon-ai_pub/chnl/data/config/debug/gnn"
-    return topic 
+    return topic
 
-def gnn_mqtt_client_instance(broker_address,broker_port):
-    print('----------- Create an MQTT Client Instance -----------')
+
+def gnn_mqtt_client_instance(broker_address, broker_port):
+    print("----------- Create an MQTT Client Instance -----------")
     # create an MQTT client instance
     client = mqtt.Client()
 
@@ -20,13 +20,15 @@ def gnn_mqtt_client_instance(broker_address,broker_port):
 
     return client
 
+
 def on_publish(client, userdata, result):
     # print("Data published to MQTT")
     pass
 
-def gnn_pub(topic, val, client): 
+
+def gnn_pub(topic, val, client):
     try:
-        (result, mid) = client.publish(topic, '{0};{1}'.format(val, time.time()))
+        (result, mid) = client.publish(topic, "{0};{1}".format(val, time.time()))
         if result == mqtt.MQTT_ERR_SUCCESS:
             print(f"Data published successfully. message ID:{mid}")
         elif result == mqtt.MQTT_ERR_NO_CONN:
@@ -38,6 +40,4 @@ def gnn_pub(topic, val, client):
         else:
             print(f"Error: Unknown error occurred. message ID:{mid}")
     except Exception as e:
-        print(e) 
-
-
+        print(e)

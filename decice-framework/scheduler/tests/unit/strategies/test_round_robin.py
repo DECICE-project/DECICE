@@ -1,7 +1,6 @@
 import pytest
 
-from strategies.round_robin import (calculate_throughput_from_allocations,
-                                    schedule)
+from strategies.round_robin import calculate_throughput_from_allocations, schedule
 
 
 @pytest.fixture

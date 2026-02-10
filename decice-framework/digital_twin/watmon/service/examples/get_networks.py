@@ -27,9 +27,7 @@ def construct_typed_graph() -> TypedGraph:
             tg.add_node(nxnode)
         else:
             devname = metric.get("devicename")
-            nxdevice = NetworkxNode(
-                name=devname, type="device", device_id=metric.get("device_id")
-            )
+            nxdevice = NetworkxNode(name=devname, type="device", device_id=metric.get("device_id"))
             tg.add_node(nxdevice)
 
     # Get edges from Prometheus
@@ -47,9 +45,7 @@ def construct_typed_graph() -> TypedGraph:
         tg.add_edge_from_key(
             src_key=src_node,
             dst_key=dst_node,
-            edge=NetworkxEdge(
-                label=metric.get("network_delay_ms"), weight=latest_value
-            ),
+            edge=NetworkxEdge(label=metric.get("network_delay_ms"), weight=latest_value),
         )
     prom.close()
     return tg

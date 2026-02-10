@@ -188,7 +188,7 @@ def generate_scenario_data(
         remainder = num_nodes % actual_num_pools
         start_idx = 0
         for i in range(actual_num_pools):
-            pool_id = f"pool-{i+1}"
+            pool_id = f"pool-{i + 1}"
             pool_ids.append(pool_id)
             count = nodes_per_pool + (1 if i < remainder else 0)
             end_idx = start_idx + count
@@ -258,7 +258,7 @@ def main():
         scenario_data = generate_scenario_data(
             (args.jobs_min, args.jobs_max), (args.nodes_min, args.nodes_max), args.pools
         )
-        file_name = output_path / f"scenario_{i+1:03d}_{get_random_timestamp()}.json"
+        file_name = output_path / f"scenario_{i + 1:03d}_{get_random_timestamp()}.json"
         try:
             with open(file_name, "w") as f:
                 json.dump(scenario_data, f, indent=2)

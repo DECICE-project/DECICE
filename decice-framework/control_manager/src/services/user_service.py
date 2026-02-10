@@ -5,9 +5,14 @@ from fastapi import Depends
 
 from db.models import PlatformIdentity
 from db.models import User as DBUser
-from domain.user_schemas import (PlatformIdentityCreate,
-                                 PlatformIdentityResponse, User, UserCreate,
-                                 UserRole, UserUpdate)
+from domain.user_schemas import (
+    PlatformIdentityCreate,
+    PlatformIdentityResponse,
+    User,
+    UserCreate,
+    UserRole,
+    UserUpdate,
+)
 from repositories.user_repository import UserRepository, get_user_repository
 
 logger = logging.getLogger(__name__)

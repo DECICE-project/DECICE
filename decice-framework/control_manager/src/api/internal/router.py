@@ -4,10 +4,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from auth.auth import verify_internal_traffic
-from domain.schemas import (PaginatedTasksResponse, SchedulingDecisionBase,
-                            TaskStatus, TaskStatusUpdateRequest,
-                            TaskWithSchedulingResponse,
-                            WorkflowStatusUpdateRequest)
+from domain.schemas import (
+    PaginatedTasksResponse,
+    SchedulingDecisionBase,
+    TaskStatus,
+    TaskStatusUpdateRequest,
+    TaskWithSchedulingResponse,
+    WorkflowStatusUpdateRequest,
+)
 from services.workflow_service import WorkflowService, get_workflow_service
 
 logger = logging.getLogger(__name__)

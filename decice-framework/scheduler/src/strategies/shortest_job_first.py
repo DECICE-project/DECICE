@@ -33,8 +33,9 @@ def schedule(
     try:
         sorted_jobs = sorted(
             jobs,
-            key=lambda job: float(job.get("required_cpu", 0))
-            + float(job.get("required_memory", 0)),
+            key=lambda job: (
+                float(job.get("required_cpu", 0)) + float(job.get("required_memory", 0))
+            ),
         )
     except (KeyError, TypeError) as e:
         logger.error(f"SJF: Error sorting jobs: {e}. Check keys.", exc_info=True)

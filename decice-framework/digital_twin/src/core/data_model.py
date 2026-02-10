@@ -154,6 +154,7 @@ class DeciceDigitalTwin(BaseModel):
     jobs: Optional[List[Job]] = Field([], description="Jobs that may run on the cluster")
     cluster_info: Optional[Dict[str, Any]] = Field({}, description="Optional additional information about the cluster")
 
+
 class DeciceDigitalTwinV1(BaseModel):
     class Config:
         extra = Extra.forbid

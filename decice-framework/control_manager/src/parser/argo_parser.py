@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 @ParserRegistry.register
 class ArgoYAMLParser(AbstractWorkflowParser):
-
     @classmethod
     def can_parse(cls, filename: str, file_content: bytes) -> bool:
         if not filename.lower().endswith((".yaml", ".yml")):

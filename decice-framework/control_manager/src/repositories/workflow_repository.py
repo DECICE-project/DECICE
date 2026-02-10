@@ -9,8 +9,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased, joinedload, selectinload, with_polymorphic
 
 from core.dependencies import get_db_session
-from db.models import (Deployment, HPCJob, Job, SchedulingDecision, TaskStatus,
-                       Workflow, WorkflowTask, WorkflowTaskDependency)
+from db.models import (
+    Deployment,
+    HPCJob,
+    Job,
+    SchedulingDecision,
+    TaskStatus,
+    Workflow,
+    WorkflowTask,
+    WorkflowTaskDependency,
+)
 from domain.schemas import TaskStatus, WorkflowStatus
 
 logger = logging.getLogger(__name__)

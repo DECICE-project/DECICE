@@ -5,13 +5,15 @@ from uuid import UUID
 
 from fastapi import Depends, UploadFile
 
-from db.models import (SchedulingDecision, TaskStatus, User, Workflow,
-                       WorkflowTask)
-from domain.schemas import (MultiTaskStatusUpdate, PSGCTaskStatusUpdateRequest,
-                            WorkflowCreateRequest, WorkflowCreateResponse,
-                            WorkflowStatus)
-from repositories.workflow_repository import (WorkflowRepository,
-                                              get_workflow_repository)
+from db.models import SchedulingDecision, TaskStatus, User, Workflow, WorkflowTask
+from domain.schemas import (
+    MultiTaskStatusUpdate,
+    PSGCTaskStatusUpdateRequest,
+    WorkflowCreateRequest,
+    WorkflowCreateResponse,
+    WorkflowStatus,
+)
+from repositories.workflow_repository import WorkflowRepository, get_workflow_repository
 from services.psgc_service import PsgcService, get_psgc_service
 
 logger = logging.getLogger(__name__)
@@ -104,9 +106,10 @@ class WorkflowService:
                 f"Task {task_id} completed with status {final_status}, stopping downstream progression."
             )
             # Find and cancel all downstream tasks in the database
-            tasks_cancelled, workflow_id = (
-                await self.repository.cancel_downstream_tasks(task_id)
-            )
+            (
+                tasks_cancelled,
+                workflow_id,
+            ) = await self.repository.cancel_downstream_tasks(task_id)
             for task in tasks_cancelled:
                 # Add to the list to notify PSGC
                 update_list.append(
@@ -119,9 +122,10 @@ class WorkflowService:
 
         elif final_status == TaskStatus.SUCCEEDED:
             # Find any downstream tasks that are now ready to run
-            ready_tasks, workflow_id = (
-                await self.repository.find_ready_downstream_tasks(task_id)
-            )
+            (
+                ready_tasks,
+                workflow_id,
+            ) = await self.repository.find_ready_downstream_tasks(task_id)
 
             if not ready_tasks:
                 logger.info(

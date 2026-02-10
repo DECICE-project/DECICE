@@ -20,9 +20,11 @@ from pydantic import ValidationError
 # If you have your logger, you can import it; otherwise basic prints will work.
 try:
     from app.utils.logger_config import setup_logging
+
     logger = setup_logging(app_name="k8s-pod-power")
 except Exception:
     import logging
+
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logger = logging.getLogger("k8s-pod-power")
 
@@ -85,10 +87,14 @@ def parse_mem_to_mib(q: Optional[str]) -> Optional[int]:
         return None
     s = str(q).strip().lower()
     multipliers = {
-        "k": 1 / 1024, "ki": 1 / 1024,
-        "m": 1, "mi": 1,
-        "g": 1024, "gi": 1024,
-        "t": 1024 * 1024, "ti": 1024 * 1024,
+        "k": 1 / 1024,
+        "ki": 1 / 1024,
+        "m": 1,
+        "mi": 1,
+        "g": 1024,
+        "gi": 1024,
+        "t": 1024 * 1024,
+        "ti": 1024 * 1024,
     }
     for suf, mul in multipliers.items():
         if s.endswith(suf):
@@ -104,8 +110,15 @@ def parse_mem_to_mib(q: Optional[str]) -> Optional[int]:
 # ---------- Extractors ----------
 def _vol_type(v: Dict) -> str:
     keys = {
-        "emptyDir", "hostPath", "persistentVolumeClaim", "configMap",
-        "secret", "downwardAPI", "projected", "nfs", "ephemeral"
+        "emptyDir",
+        "hostPath",
+        "persistentVolumeClaim",
+        "configMap",
+        "secret",
+        "downwardAPI",
+        "projected",
+        "nfs",
+        "ephemeral",
     }
     for k in keys:
         if k in v:
@@ -160,14 +173,13 @@ def podtemplate_to_request(
 
     runtime_class = spec.get("runtimeClassName")
     node_selector = spec.get("nodeSelector") or {}
-    node_type = (
-        node_selector.get("node.kubernetes.io/instance-type") or
-        node_selector.get("beta.kubernetes.io/instance-type")
+    node_type = node_selector.get("node.kubernetes.io/instance-type") or node_selector.get(
+        "beta.kubernetes.io/instance-type"
     )
 
     # GPU (limits.*gpu*)
     gpu_count = 0
-    for c in (spec.get("containers") or []):
+    for c in spec.get("containers") or []:
         lim = (c.get("resources") or {}).get("limits") or {}
         for k, v in lim.items():
             if "gpu" in k:
@@ -217,14 +229,13 @@ def pod_to_request(pod: Dict) -> InferenceRequest:
     # scheduling/context
     runtime_class = spec.get("runtimeClassName")
     node_selector = spec.get("nodeSelector") or {}
-    node_type = (
-        node_selector.get("node.kubernetes.io/instance-type")
-        or node_selector.get("beta.kubernetes.io/instance-type")
+    node_type = node_selector.get("node.kubernetes.io/instance-type") or node_selector.get(
+        "beta.kubernetes.io/instance-type"
     )
 
     # gpu count
     gpu_count = 0
-    for c in (spec.get("containers") or []):
+    for c in spec.get("containers") or []:
         lim = (c.get("resources") or {}).get("limits") or {}
         for k, v in lim.items():
             if "gpu" in k:
@@ -236,7 +247,7 @@ def pod_to_request(pod: Dict) -> InferenceRequest:
     # try to infer owner workload kind/name, else treat as Pod
     workload_kind = "Pod"
     workload_name = name
-    for ref in (pod["metadata"].get("ownerReferences") or []):
+    for ref in pod["metadata"].get("ownerReferences") or []:
         # Prefer higher-level owner if present (ReplicaSet→Deployment etc. is okay to keep as-is)
         workload_kind = ref.get("kind") or workload_kind
         workload_name = ref.get("name") or workload_name
@@ -371,7 +382,7 @@ def stream_inference_requests(
             for event in w.stream(api_batch.list_cron_job_for_all_namespaces):
                 if event["type"] in ("ADDED", "MODIFIED"):
                     yield from handle_obj("CronJob", event["object"].to_dict())
-        
+
         if "Pod" in kinds:
             for event in w.stream(api_core.list_pod_for_all_namespaces):
                 if event["type"] in ("ADDED", "MODIFIED"):
@@ -480,20 +491,23 @@ def main():
 
     p_watch = sub.add_parser("watch", help="Watch cluster and emit InferenceRequest JSON lines.")
     p_watch.add_argument("--kinds", nargs="+", default=["Deployment", "Job", "CronJob"])
-    p_watch.add_argument("--namespaces", nargs="*", default=None,
-                         help="If omitted, watch all namespaces.")
-    p_watch.add_argument("--emit-initial", action="store_true",
-                         help="Emit current objects before watching.")
+    p_watch.add_argument("--namespaces", nargs="*", default=None, help="If omitted, watch all namespaces.")
+    p_watch.add_argument("--emit-initial", action="store_true", help="Emit current objects before watching.")
     p_watch.add_argument("--output", help="Write NDJSON to this file.")
     p_watch.add_argument("--post", help="POST each InferenceRequest to this URL.")
-    p_watch.add_argument("--kubeconfig", default=os.getenv("KUBECONFIG"),
-                         help="Path to kubeconfig (overrides detection).")
-    p_watch.add_argument("--ca-file", default=os.getenv("K8S_CA_FILE"),
-                         help="Path to cluster CA file (optional).")
-    p_watch.add_argument("--verify-ssl", type=lambda v: v.lower() in ("1", "true", "yes"),
-                         default=None, help="Force SSL verification on/off. Default: client default.")
-    p_watch.add_argument("--suppress-tls-warnings", action="store_true",
-                         help="Disable urllib3 InsecureRequestWarning (dev only).")
+    p_watch.add_argument(
+        "--kubeconfig", default=os.getenv("KUBECONFIG"), help="Path to kubeconfig (overrides detection)."
+    )
+    p_watch.add_argument("--ca-file", default=os.getenv("K8S_CA_FILE"), help="Path to cluster CA file (optional).")
+    p_watch.add_argument(
+        "--verify-ssl",
+        type=lambda v: v.lower() in ("1", "true", "yes"),
+        default=None,
+        help="Force SSL verification on/off. Default: client default.",
+    )
+    p_watch.add_argument(
+        "--suppress-tls-warnings", action="store_true", help="Disable urllib3 InsecureRequestWarning (dev only)."
+    )
 
     p_file = sub.add_parser("from-file", help="Build InferenceRequest from a YAML manifest.")
     p_file.add_argument("path", help="Path to Deployment/Job/CronJob YAML")
@@ -503,6 +517,7 @@ def main():
     if getattr(args, "suppress_tls_warnings", False):
         import urllib3
         from urllib3.exceptions import InsecureRequestWarning
+
         urllib3.disable_warnings(InsecureRequestWarning)
 
     if args.cmd == "watch":
@@ -532,6 +547,7 @@ def main():
             _emit(ir)
     else:
         import yaml
+
         with open(args.path, "r") as f:
             docs = list(yaml.safe_load_all(f))
         for obj in docs:

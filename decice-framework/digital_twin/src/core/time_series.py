@@ -1,8 +1,8 @@
-from digital_twin.core.data_model import DeciceDigitalTwin, Node, Link, Device, Vertexpool, Metrics
-from digital_twin.core.model_utils import get_all_links, get_devices_vp_tuple, get_nodes_vp_tuple
+from core.data_model import DeciceDigitalTwin, Node, Link, Device, Vertexpool, Metrics
+from core.model_utils import get_all_links, get_devices_vp_tuple, get_nodes_vp_tuple
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
-from digital_twin.core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
+from core.time_series_schema import TimeSeriesPointWrite, TimeSeriesPointRead, TimeRange
 from typing import Any
 from abc import ABC, abstractmethod
 import time
@@ -156,7 +156,7 @@ class DTCTimeSeries(TimeSeriesClient):
                 point.tag("vertexpool_id", node_vertexpool_id)
             points.append(point)
         return points
-    
+
     def get_cluster_info_points(self, cluster_info: dict, timestamp: datetime) -> list[Point]:
         points = []
         point = Point("cluster_info").time(timestamp)
@@ -271,7 +271,7 @@ class DTCTimeSeries(TimeSeriesClient):
             cluster_info_points: dict[dict] = cluster_info.get(timestamp, {})
             if cluster_info_points:
                 cluster_info_dict = {}
-                for key,value in cluster_info_points[0].items():
+                for key, value in cluster_info_points[0].items():
                     # value can be a number or nested json string
                     if isinstance(value, str):
                         try:

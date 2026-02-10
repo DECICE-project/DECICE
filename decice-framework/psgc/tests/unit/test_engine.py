@@ -68,7 +68,7 @@ def mock_settings() -> MagicMock:
     settings.MINIO_ACCESS_KEY = "mock-access-key"
     settings.MINIO_SECRET_KEY = "mock-secret-key"
     # Mock the sched. webhook enable flag - set it to False for testing purposes
-    settings.SCHED_WEBHOOK=False
+    settings.SCHED_WEBHOOK = False
     return settings
 
 

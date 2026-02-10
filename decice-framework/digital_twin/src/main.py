@@ -8,9 +8,9 @@ from fastapi import FastAPI
 import uvicorn
 
 # from core_model_router import router as model_router
-from digital_twin.api.v1 import router as v1_router
-from digital_twin.api.v2 import router as v2_router
-from digital_twin.config.config import service_settings
+from api.v1 import router as v1_router
+from api.v2 import router as v2_router
+from config.config import service_settings
 
 app = FastAPI(docs_url="/", title="Digital-Twin API", version="0.2.0")
 

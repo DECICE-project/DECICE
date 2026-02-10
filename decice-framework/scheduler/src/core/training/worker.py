@@ -7,8 +7,7 @@ from typing import Any, Dict
 from config.config import get_settings
 from core.ai_scheduler import AIScheduler
 from core.db.db import AsyncSessionLocal
-from core.features.factory import (create_data_transformer,
-                                   create_feature_engineer)
+from core.features.factory import create_data_transformer, create_feature_engineer
 from core.fuzzy_storage import FuzzyStorageResourcesAccessGate
 from core.kairos import Kairos
 from core.preprocessing.scaler_manager import ScalerManager
@@ -75,7 +74,7 @@ def run_training_task(
     loop.run_until_complete(_worker_update_status(job_id, "running"))
 
     try:
-        # 1. Paths
+        # Paths
         base_model_dir = settings.MODELS_BASE_DIR / model_config.name
         base_model_dir.mkdir(parents=True, exist_ok=True)
 
@@ -94,7 +93,7 @@ def run_training_task(
                 dataset_path=dataset_dir, output_path=scalers_path
             )
 
-        # 2. Initialize Components
+        # Initialize Components
         strategy_factory = StrategyFactory(
             strategies_pkg_path=settings.STRATEGIES_PACKAGE_PATH
         )
@@ -108,7 +107,7 @@ def run_training_task(
             suitability_threshold=settings.FUZZY_THRESHOLD,
         )
 
-        # 3. Initialize AI (Using params from Model Config)
+        # Initialize AI (Using params from Model Config)
         ai_scheduler = AIScheduler(
             kairos_instance=kairos,
             data_transformer=create_data_transformer(),
@@ -128,7 +127,7 @@ def run_training_task(
         if run_request.resume_from_checkpoint:
             ai_scheduler.load_models()
 
-        # 4. Initialize Simulator
+        # Initialize Simulator
         simulator = TrainingSimulator(ai_scheduler, kairos, fuzzy_gate)
 
         # Inject Dataset Path into Simulator (Assuming Simulator is updated to handle this)
@@ -136,11 +135,11 @@ def run_training_task(
         # For now, we assume TrainingSimulator checks this attribute.
         simulator.dataset_path = dataset_dir
 
-        # 5. Define Cancellation Callback
+        # Define Cancellation Callback
         async def stop_callback():
             return await _check_cancellation(job_id)
 
-        # 6. Run Loop
+        # Run Loop
         results = loop.run_until_complete(
             simulator.run_training_session(
                 cycles=run_request.cycles,

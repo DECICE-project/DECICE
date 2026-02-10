@@ -20,9 +20,9 @@ from .schemas import ScheduleRequest
 class ReplayBuffer:
     def __init__(self, capacity=10000):
         self.capacity = capacity
-        self.buffer: list[tuple[np.ndarray, int, float, Optional[np.ndarray], bool]] = (
-            []
-        )
+        self.buffer: list[
+            tuple[np.ndarray, int, float, Optional[np.ndarray], bool]
+        ] = []
         self.position = 0
         self.logger = logging.getLogger(__name__ + ".ReplayBuffer")
 
@@ -39,7 +39,9 @@ class ReplayBuffer:
         self.buffer[self.position] = (state, action_index, reward, next_state, done)
         self.position = (self.position + 1) % self.capacity
 
-    def sample(self, batch_size: int) -> Tuple[
+    def sample(
+        self, batch_size: int
+    ) -> Tuple[
         Optional[np.ndarray],
         Optional[np.ndarray],
         Optional[np.ndarray],
@@ -645,7 +647,7 @@ class AIScheduler:
                 avg_entropy = epoch_entropy / num_batches_processed
 
                 self.logger.info(
-                    f"PPO Epoch {epoch+1}/{self.epochs_per_update} - "
+                    f"PPO Epoch {epoch + 1}/{self.epochs_per_update} - "
                     f"Avg Actor Loss: {avg_actor:.4f}, "
                     f"Avg Critic Loss: {avg_critic:.4f}, "
                     f"Avg Entropy: {avg_entropy:.4f}"
@@ -674,7 +676,7 @@ class AIScheduler:
                 # )
             else:
                 self.logger.warning(
-                    f"PPO Epoch {epoch+1}/{self.epochs_per_update} - No batches processed."
+                    f"PPO Epoch {epoch + 1}/{self.epochs_per_update} - No batches processed."
                 )
                 break
 

@@ -5,6 +5,7 @@ import argparse, requests, numpy as np, pandas as pd
 from kubernetes import client as k8s_client, config as k8s_config
 from kubernetes.config.config_exception import ConfigException
 
+
 def prom_range(prom_base: str, query: str, start: str, end: str, step: str) -> pd.DataFrame:
     r = requests.get(
         f"{prom_base.rstrip('/')}/api/v1/query_range",
@@ -20,6 +21,7 @@ def prom_range(prom_base: str, query: str, start: str, end: str, step: str) -> p
             rows.append({"ts": float(ts), "value": float(val), **metric})
     df = pd.DataFrame(rows)
     return df
+
 
 def norm_ns_pod(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
@@ -38,6 +40,7 @@ def norm_ns_pod(df: pd.DataFrame) -> pd.DataFrame:
                 df.rename(columns={cand: "pod"}, inplace=True)
                 break
     return df
+
 
 def get_owner_map_via_k8s(namespaces=None) -> pd.DataFrame:
     try:
@@ -65,12 +68,17 @@ def get_owner_map_via_k8s(namespaces=None) -> pd.DataFrame:
         rows.append({"namespace": ns, "pod": pod, "owner_kind": ok, "owner_name": on})
     return pd.DataFrame(rows)
 
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--prom", default="http://prometheus.lpt.local", help="Prometheus base URL")
-    p.add_argument("--owner-source", choices=["prom","k8s","auto"], default="auto",
-                   help="Where to get pod→owner mapping. 'auto' tries Prom first then K8s API. Default: k8s.")
-    p.add_argument("--mode", choices=["job","window"], default="window")
+    p.add_argument(
+        "--owner-source",
+        choices=["prom", "k8s", "auto"],
+        default="auto",
+        help="Where to get pod→owner mapping. 'auto' tries Prom first then K8s API. Default: k8s.",
+    )
+    p.add_argument("--mode", choices=["job", "window"], default="window")
     p.add_argument("--start", required=True)
     p.add_argument("--end", required=True)
     p.add_argument("--out", required=True)
@@ -82,6 +90,7 @@ def main():
     if args.suppress_tls_warnings:
         import urllib3
         from urllib3.exceptions import InsecureRequestWarning
+
         urllib3.disable_warnings(InsecureRequestWarning)
 
     # ---- owner mapping (prefer prom) ----
@@ -91,12 +100,14 @@ def main():
             owner = prom_range(
                 args.prom,
                 # pull all kinds; we will normalize below
-                'max by(namespace,pod,owner_kind,owner_name) (kube_pod_owner)',
-                args.start, args.end, args.step
+                "max by(namespace,pod,owner_kind,owner_name) (kube_pod_owner)",
+                args.start,
+                args.end,
+                args.step,
             )
             owner = norm_ns_pod(owner)
             if not owner.empty:
-                owner = owner[["namespace","pod","owner_kind","owner_name","ts"]]
+                owner = owner[["namespace", "pod", "owner_kind", "owner_name", "ts"]]
         except Exception:
             owner = pd.DataFrame()
 
@@ -110,8 +121,10 @@ def main():
     try:
         power = prom_range(
             args.prom,
-            'sum by (container_namespace,pod_name) (kepler_container_power_watt)',
-            args.start, args.end, args.step
+            "sum by (container_namespace,pod_name) (kepler_container_power_watt)",
+            args.start,
+            args.end,
+            args.step,
         )
     except Exception:
         power = pd.DataFrame()
@@ -122,8 +135,10 @@ def main():
     # Your cluster exposes container-level energy; use that metric specifically.
     energy = prom_range(
         args.prom,
-        'sum by (container_namespace,pod_name) (kepler_container_joules_total)',
-        args.start, args.end, args.step
+        "sum by (container_namespace,pod_name) (kepler_container_joules_total)",
+        args.start,
+        args.end,
+        args.step,
     )
     energy = norm_ns_pod(energy) if energy is not None else pd.DataFrame()
     # Drop any rows that still don't have namespace/pod (e.g., node/system series)
@@ -134,34 +149,36 @@ def main():
             # keep only rows that have the needed labels if present as alt names
             # (shouldn't happen now, but safe)
             pass
-        energy = energy.dropna(subset=["namespace","pod"], how="any")
+        energy = energy.dropna(subset=["namespace", "pod"], how="any")
         if not energy.empty:
-            energy = energy.sort_values(["namespace","pod","ts"])
+            energy = energy.sort_values(["namespace", "pod", "ts"])
     if not energy.empty:
-        energy["energy_step_j"] = energy.groupby(["namespace","pod"])["value"].diff().clip(lower=0.0)
+        energy["energy_step_j"] = energy.groupby(["namespace", "pod"])["value"].diff().clip(lower=0.0)
 
     # ---- build label table robustly ----
     if power.empty and energy.empty:
-        raise SystemExit("No Kepler power/energy data returned. Check that Kepler is installed and scraped by Prometheus.")
+        raise SystemExit(
+            "No Kepler power/energy data returned. Check that Kepler is installed and scraped by Prometheus."
+        )
 
     # ensure both sides exist with needed columns
     if power.empty:
-        power = energy[["namespace","pod","ts"]].copy()
+        power = energy[["namespace", "pod", "ts"]].copy()
         power["avg_power_w"] = np.nan
     if energy.empty:
-        energy = power[["namespace","pod","ts"]].copy()
+        energy = power[["namespace", "pod", "ts"]].copy()
         energy["energy_step_j"] = np.nan
 
-    lab = power.merge(energy[["namespace","pod","ts","energy_step_j"]],
-                      on=["namespace","pod","ts"], how="left")
+    lab = power.merge(energy[["namespace", "pod", "ts", "energy_step_j"]], on=["namespace", "pod", "ts"], how="left")
 
     if "ts" in owner.columns:
-        lab = lab.merge(owner, on=["namespace","pod","ts"], how="left")
+        lab = lab.merge(owner, on=["namespace", "pod", "ts"], how="left")
     else:
-        lab = lab.merge(owner, on=["namespace","pod"], how="left")
+        lab = lab.merge(owner, on=["namespace", "pod"], how="left")
 
     # --- normalize owner to match features keys ---
     import re
+
     def _rs_to_deploy(name: str) -> str:
         # ReplicaSet "myapp-75b8db778" -> Deployment "myapp"
         return re.sub(r"-[a-f0-9]{9,}$", "", name or "")
@@ -178,15 +195,16 @@ def main():
     lab["workload_name"] = wn
 
     if args.mode == "job":
-        out = lab.groupby(["namespace","workload_kind","workload_name","pod"], as_index=False).agg(
-            avg_power_w=("avg_power_w","mean"),
-            total_energy_j=("energy_step_j","sum"),
+        out = lab.groupby(["namespace", "workload_kind", "workload_name", "pod"], as_index=False).agg(
+            avg_power_w=("avg_power_w", "mean"),
+            total_energy_j=("energy_step_j", "sum"),
         )
     else:
-        out = lab[["ts","namespace","workload_kind","workload_name","pod","avg_power_w","energy_step_j"]].copy()
+        out = lab[["ts", "namespace", "workload_kind", "workload_name", "pod", "avg_power_w", "energy_step_j"]].copy()
 
     out.to_parquet(args.out, index=False)
     print(f"[OK] wrote {len(out)} rows to {args.out}")
+
 
 if __name__ == "__main__":
     main()

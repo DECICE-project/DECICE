@@ -7,8 +7,7 @@ import pytest
 from db.models import SchedulingDecision, Workflow, WorkflowTask
 from domain.schemas import PaginatedSchedulingDecisionsResponse
 from repositories.scheduling_repository import SchedulingRepository
-from services.scheduling_service import (SchedulingService,
-                                         get_scheduling_service)
+from services.scheduling_service import SchedulingService, get_scheduling_service
 
 
 @pytest.fixture

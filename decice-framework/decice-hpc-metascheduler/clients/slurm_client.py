@@ -2,15 +2,19 @@
 
 from typing import Dict, List, Any
 
+
 class SlurmClient:
     """
     A client for interacting with the Slurm-InterLink API.
     This is a placeholder implementation.
     """
-    def submit_job_via_interlink(self, job_name: str, image: str, command: List[str], job_details: Dict[str, Any]) -> str:
+
+    def submit_job_via_interlink(
+        self, job_name: str, image: str, command: List[str], job_details: Dict[str, Any]
+    ) -> str:
         """
         Submits a job to the Slurm cluster via the InterLink API.
-        
+
         Returns:
             The external job ID from Slurm.
         """

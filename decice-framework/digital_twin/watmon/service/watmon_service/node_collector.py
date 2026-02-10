@@ -25,9 +25,7 @@ class NodeSniffer:
         self.prom = PrometheusAsync(settings.prometheus_url, 4.0)
         self._run: bool = True
 
-    def _find_node_in_list_node_info(
-        self, nodename: str, list_node_info: list[NodeInVP]
-    ) -> NodeInVP | None:
+    def _find_node_in_list_node_info(self, nodename: str, list_node_info: list[NodeInVP]) -> NodeInVP | None:
         for node_info in list_node_info:
             if nodename == node_info.nodename:
                 return node_info
@@ -67,20 +65,14 @@ class NodeSniffer:
                     await self.vertexpool_manager.delete_node(node.nodename)
                     continue
                 # if database nodes ip not the same in cluster , update it
-                node_from_cluster = self._find_node_in_list_node_info(
-                    node.nodename, self.in_cluster_nodes
-                )
+                node_from_cluster = self._find_node_in_list_node_info(node.nodename, self.in_cluster_nodes)
                 if node_from_cluster and node_from_cluster.ip != node.ip:
-                    await self.vertexpool_manager.patch_node(
-                        nodename=node.nodename, ip=node_from_cluster.ip
-                    )
+                    await self.vertexpool_manager.patch_node(nodename=node.nodename, ip=node_from_cluster.ip)
 
             # for nodes in cluster but not in database, add them
             for node in self.in_cluster_nodes:
                 if node.nodename not in [n.nodename for n in nodes_from_database]:
-                    await self.vertexpool_manager.add_node(
-                        nodename=node.nodename, ip=node.ip
-                    )
+                    await self.vertexpool_manager.add_node(nodename=node.nodename, ip=node.ip)
         except ConnectionError as ce:
             print(f"PROMETHEUS CONNECTION ERROR: {ce}")
 

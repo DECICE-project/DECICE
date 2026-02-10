@@ -75,9 +75,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(
-    docs_url="/", lifespan=lifespan, title="WATMON-Service API", version="0.2.3"
-)
+app = FastAPI(docs_url="/", lifespan=lifespan, title="WATMON-Service API", version="0.2.3")
 metrics_app = make_asgi_app()
 app.mount("/metrics/", metrics_app)
 app.add_middleware(
@@ -108,16 +106,10 @@ async def update_metrics():
 
 
 @app.post("/nodes/", status_code=201)
-async def add_node(
-    node: Node, manager: VertexpoolManager = Depends(get_vertexpool_manager)
-):
+async def add_node(node: Node, manager: VertexpoolManager = Depends(get_vertexpool_manager)):
     try:
-        node = await manager.add_node(
-            nodename=node.nodename, vertexpool_id=node.vertexpool_id, ip=node.ip
-        )
-        return Node(
-            nodename=node.nodename, vertexpool_id=node.vertexpool_id, ip=node.ip
-        )
+        node = await manager.add_node(nodename=node.nodename, vertexpool_id=node.vertexpool_id, ip=node.ip)
+        return Node(nodename=node.nodename, vertexpool_id=node.vertexpool_id, ip=node.ip)
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -125,9 +117,7 @@ async def add_node(
 
 
 @app.post("/devices/", status_code=201)
-async def add_device(
-    device: DevicePost, manager: VertexpoolManager = Depends(get_vertexpool_manager)
-):
+async def add_device(device: DevicePost, manager: VertexpoolManager = Depends(get_vertexpool_manager)):
     try:
         device_in_db = await manager.add_device(device)
         return convert_device_response(device_in_db)
@@ -144,9 +134,7 @@ async def move_node(
     manager: VertexpoolManager = Depends(get_vertexpool_manager),
 ):
     try:
-        await manager.move_node_to_vertexpool(
-            nodename=nodename, new_vertexpool_id=new_vertexpool_id
-        )
+        await manager.move_node_to_vertexpool(nodename=nodename, new_vertexpool_id=new_vertexpool_id)
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -162,9 +150,7 @@ async def patch_node(
     try:
         node_db = await manager.patch_node(nodename=nodename, ip=node.ip)
         if node_db:
-            return Node(
-                nodename=nodename, vertexpool_id=node_db.vertexpool_id, ip=node_db.ip
-            )
+            return Node(nodename=nodename, vertexpool_id=node_db.vertexpool_id, ip=node_db.ip)
         else:
             raise HTTPException(500, detail="Something went terribly wrong")
     except HTTPException as he:
@@ -180,9 +166,7 @@ async def patch_device(
     manager: VertexpoolManager = Depends(get_vertexpool_manager),
 ):
     try:
-        dev = await manager.patch_device(
-            device_id, name=device.name, labels=device.labels, ip=device.ip
-        )
+        dev = await manager.patch_device(device_id, name=device.name, labels=device.labels, ip=device.ip)
         if dev:
             return convert_device_response(dev)
         else:
@@ -200,9 +184,7 @@ async def add_device_label(
     manager: VertexpoolManager = Depends(get_vertexpool_manager),
 ):
     try:
-        dev = await manager.add_device_label(
-            device_id, label.label_key, label.label_value
-        )
+        dev = await manager.add_device_label(device_id, label.label_key, label.label_value)
         if dev:
             return convert_device_response(dev)
         else:
@@ -223,9 +205,7 @@ async def move_device(
     If new_vertexpool_id is None, it will be moved to a new vertexpool with auto-incremented ID.
     """
     try:
-        await manager.move_device_to_vertexpool(
-            device_id=device_id, new_vertexpool_id=new_vertexpool_id
-        )
+        await manager.move_device_to_vertexpool(device_id=device_id, new_vertexpool_id=new_vertexpool_id)
         return
     except HTTPException as he:
         raise he
@@ -234,9 +214,7 @@ async def move_device(
 
 
 @app.delete("/nodes/{nodename}", status_code=204)
-async def delete_node(
-    nodename: str, manager: VertexpoolManager = Depends(get_vertexpool_manager)
-):
+async def delete_node(nodename: str, manager: VertexpoolManager = Depends(get_vertexpool_manager)):
     try:
         await manager.delete_node(nodename=nodename)
     except Exception as e:
@@ -260,9 +238,7 @@ async def get_nodes_list(
 
 
 @app.delete("/devices/{device_id}", status_code=204)
-async def delete_device(
-    device_id: int, manager: VertexpoolManager = Depends(get_vertexpool_manager)
-):
+async def delete_device(device_id: int, manager: VertexpoolManager = Depends(get_vertexpool_manager)):
     try:
         await manager.delete_device(device_id=device_id)
     except Exception as e:
@@ -313,9 +289,7 @@ async def add_vertexpool_label(
     manager: VertexpoolManager = Depends(get_vertexpool_manager),
 ):
     try:
-        vertexpool = await manager.add_vertexpool_label(
-            vertexpool_id, label.label_key, label.label_value
-        )
+        vertexpool = await manager.add_vertexpool_label(vertexpool_id, label.label_key, label.label_value)
         if vertexpool:
             return convert_vertexpool_response(vertexpool)
         else:
@@ -348,15 +322,11 @@ async def group_vertices(
                     node = await manager.get_node(nodename=vertice.name)
                     new_vertexpool_id = node.vertexpool_id
                 else:
-                    await manager.move_node_to_vertexpool(
-                        nodename=vertice.name, new_vertexpool_id=new_vertexpool_id
-                    )
+                    await manager.move_node_to_vertexpool(nodename=vertice.name, new_vertexpool_id=new_vertexpool_id)
 
             elif vertice.type == "device":
                 if new_vertexpool_id is None:
-                    await manager.move_device_to_vertexpool(
-                        device_id=int(vertice.device_id)
-                    )
+                    await manager.move_device_to_vertexpool(device_id=int(vertice.device_id))
                     # check the new vertexpool ID of the device from DB
                     device = await manager.get_device(device_id=int(vertice.device_id))
                     new_vertexpool_id = device.vertexpool_id

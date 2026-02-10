@@ -9,9 +9,13 @@ from zipfile import ZipFile
 
 import snakemake.cli
 from snakemake.rules import Rule
-from snakemake.settings.types import (ConfigSettings, DAGSettings,
-                                      ResourceSettings, StorageSettings,
-                                      WorkflowSettings)
+from snakemake.settings.types import (
+    ConfigSettings,
+    DAGSettings,
+    ResourceSettings,
+    StorageSettings,
+    WorkflowSettings,
+)
 from snakemake.workflow import Workflow as SnakeWF
 
 from db.models import Job, TaskStatus, Workflow
@@ -261,6 +265,9 @@ class SnakemakeParser(AbstractWorkflowParser):
                 image=rule.get("container_image", None),
                 command_str=command,
                 workflow_id=workflow_id,
+                required_cpu="1",
+                required_memory="128Mi",
+                annotations={"dev.decice.com/storage-request": "1Gi"},
             )
             job_map[job.name] = job
             all_jobs.append(job)
