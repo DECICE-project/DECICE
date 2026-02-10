@@ -5,10 +5,14 @@ from uuid import UUID
 from fastapi import Depends
 
 from db.models import SchedulingDecision
-from domain.schemas import (PaginatedSchedulingDecisionsResponse,
-                            SchedulingDecisionResponse)
-from repositories.scheduling_repository import (SchedulingRepository,
-                                                get_scheduling_repository)
+from domain.schemas import (
+    PaginatedSchedulingDecisionsResponse,
+    SchedulingDecisionResponse,
+)
+from repositories.scheduling_repository import (
+    SchedulingRepository,
+    get_scheduling_repository,
+)
 
 logger = logging.getLogger(__name__)
 

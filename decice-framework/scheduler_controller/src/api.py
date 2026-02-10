@@ -7,8 +7,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 
 from config.config import get_settings
 from models.models import Task
-from services.orchestration import (OrchestrationService,
-                                    get_orchestration_service)
+from services.orchestration import OrchestrationService, get_orchestration_service
 from auth.auth import verify_internal_traffic
 
 logging.basicConfig(
@@ -31,7 +30,7 @@ async def lifespan(app: FastAPI):
     logger.info("Initialize HTTP Client")
     http_headers = {
         "X-Internal-Api-Key": settings.INTERNAL_API_KEY,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     http_limits = httpx.Limits(max_connections=100, max_keepalive_connections=20)
     http_timeout = httpx.Timeout(timeout=10.0)
@@ -62,7 +61,11 @@ app = FastAPI(
 )
 
 
-@app.post("/scheduler-controller", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_internal_traffic)],)
+@app.post(
+    "/scheduler-controller",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(verify_internal_traffic)],
+)
 async def schedule_tasks(
     task: Task,
     service: OrchestrationService = Depends(get_orchestration_service),

@@ -1,14 +1,21 @@
 import numpy as np
 import pytest
 
-from core.features.cluster import (MetricsAvailableCpuCores,
-                                   MetricsAvailableMemMb, MetricsCpuCores,
-                                   MetricsCpuUtil, MetricsFreeDiskMb,
-                                   MetricsMemTotalMb, MetricsMemUtil,
-                                   MetricsNetworkBandwidthMbps,
-                                   MetricsPowerWatts, MetricsTotalDiskMb,
-                                   MetricsUsedDiskMb, NodeIdExtractor,
-                                   NodeParentPoolIdExtractor)
+from core.features.cluster import (
+    MetricsAvailableCpuCores,
+    MetricsAvailableMemMb,
+    MetricsCpuCores,
+    MetricsCpuUtil,
+    MetricsFreeDiskMb,
+    MetricsMemTotalMb,
+    MetricsMemUtil,
+    MetricsNetworkBandwidthMbps,
+    MetricsPowerWatts,
+    MetricsTotalDiskMb,
+    MetricsUsedDiskMb,
+    NodeIdExtractor,
+    NodeParentPoolIdExtractor,
+)
 from core.schemas import Node, NodeMetrics, VertexPool
 
 

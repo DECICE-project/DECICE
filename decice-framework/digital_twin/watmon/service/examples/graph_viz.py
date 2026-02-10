@@ -3,17 +3,12 @@ from watmon_service.graph import NetworkxEdge, NetworkxNode, TypedGraph
 from matplotlib import pyplot as plt
 
 
-def visualize_graph(
-    tg: TypedGraph, title: str = "Graph Visualization by ICMP Distance"
-):
+def visualize_graph(tg: TypedGraph, title: str = "Graph Visualization by ICMP Distance"):
     G = tg.graph
 
     # Normalize weights between 0 and 1, then invert
     max_icmp = 300
-    edge_weights = {
-        (u, v): 1 - min(d.get("weight", 1.0), max_icmp) / max_icmp
-        for u, v, d in G.edges(data=True)
-    }
+    edge_weights = {(u, v): 1 - min(d.get("weight", 1.0), max_icmp) / max_icmp for u, v, d in G.edges(data=True)}
 
     for u, v in G.edges():
         G[u][v]["weight_for_layout"] = edge_weights[(u, v)]
@@ -49,9 +44,7 @@ def visualize_graph(
         label="Node",
     )
 
-    nx.draw_networkx_edges(
-        G, pos, arrowstyle="->", arrowsize=15, width=2, edge_color="gray"
-    )
+    nx.draw_networkx_edges(G, pos, arrowstyle="->", arrowsize=15, width=2, edge_color="gray")
 
     labels = {node: node.name for node in G.nodes()}
     nx.draw_networkx_labels(G, pos, labels, font_size=9)

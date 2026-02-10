@@ -125,7 +125,10 @@ class KubernetesService:
                             and cond.status == "False"
                             and cond.reason == "Unschedulable"
                         ):
-                            if "unbound immediate PersistentVolumeClaims" in cond.message:
+                            if (
+                                "unbound immediate PersistentVolumeClaims"
+                                in cond.message
+                            ):
                                 continue
                             return f"Scheduling Failed: {cond.message}"
 

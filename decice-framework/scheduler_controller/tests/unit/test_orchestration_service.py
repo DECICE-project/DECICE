@@ -6,10 +6,15 @@ from fastapi import HTTPException
 
 from clients.digital_twin import DigitalTwinClient
 from clients.scheduler import SchedulerClient
-from models.models import (ClusterState, HardwareRequirements, Node,
-                           ScheduleRequest, Task, Vertexpool)
-from services.orchestration import (OrchestrationService,
-                                    get_orchestration_service)
+from models.models import (
+    ClusterState,
+    HardwareRequirements,
+    Node,
+    ScheduleRequest,
+    Task,
+    Vertexpool,
+)
+from services.orchestration import OrchestrationService, get_orchestration_service
 
 
 @pytest.fixture

@@ -31,8 +31,8 @@ class DTCController:
         self.initialized = True
 
         self.digital_twin: DeciceDigitalTwin = None
-        self.time_series_client = None 
-        
+        self.time_series_client = None
+
         if time_series_client:
             self.time_series_client = time_series_client
         elif service_settings.influxdb:

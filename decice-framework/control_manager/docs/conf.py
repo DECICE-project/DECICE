@@ -124,7 +124,7 @@ latex_documents = [
         master_doc,
         "decicecm.tex",
         "DECICE Control Manager Documentation",
-        "Felix Stein, Mirac Aydin" "manual",
+        "manual",
     ),
 ]
 

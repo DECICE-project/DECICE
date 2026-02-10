@@ -10,10 +10,11 @@ from config.config import get_settings
 from core.db.models import TrainingJob
 from core.schemas import TrainingRunRequest
 from core.training.worker import run_training_task
-from repositories.dataset_repository import (DatasetRepository,
-                                             get_data_repository)
-from repositories.training_repository import (TrainingJobRepository,
-                                              get_training_job_repository)
+from repositories.dataset_repository import DatasetRepository, get_data_repository
+from repositories.training_repository import (
+    TrainingJobRepository,
+    get_training_job_repository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class TrainingService:
 
         job_id = str(uuid.uuid4())
 
-        # 1. Create Initial Record in DB
+        # Create Initial Record in DB
         new_job = TrainingJob(
             id=job_id,
             scheduler_name=run_request.scheduler_name,
@@ -55,10 +56,10 @@ class TrainingService:
         )
         await self.job_repo.create(new_job)
 
-        # 2. Submit to Process Pool
+        # Submit to Process Pool
         self.executor.submit(run_training_task, job_id, run_request, model_config_dict)
 
-        # 3. Update status to submitted
+        # Update status to submitted
         new_job.status = "submitted"
         await self.job_repo.update_status(job_id, "submitted")
 
@@ -72,11 +73,9 @@ class TrainingService:
         return await self.job_repo.list_all()
 
 
-# --- Dependency Injection ---
-
-
+# Dependency Provider Function
 def get_training_service(
     job_repo: TrainingJobRepository = Depends(get_training_job_repository),
-    dataset_repo: DatasetRepository = Depends(get_data_repository),  # <--- Inject here
+    dataset_repo: DatasetRepository = Depends(get_data_repository),
 ) -> TrainingService:
     return TrainingService(job_repo, dataset_repo)

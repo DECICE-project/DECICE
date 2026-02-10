@@ -4,10 +4,16 @@ from uuid import UUID
 from fastapi import Depends
 
 from clients.cm_client import CMClient, get_cm_client
-from io_models import (MinioWebhookPayload, SlurmWebhookPayload, TaskStatus,
-                       WorkflowStatus)
+from io_models import (
+    MinioWebhookPayload,
+    SlurmWebhookPayload,
+    TaskStatus,
+    WorkflowStatus,
+)
 from repository.redis_workflow_repository import (
-    RedisWorkflowRepository, get_redis_workflow_repository)
+    RedisWorkflowRepository,
+    get_redis_workflow_repository,
+)
 
 logger = logging.getLogger(__name__)
 

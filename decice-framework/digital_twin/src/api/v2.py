@@ -21,9 +21,11 @@ async def write_cluster_data(data: DeciceDigitalTwin, controller: DTCController 
     controller.update_digital_twin(data)
     return status.HTTP_201_CREATED
 
+
 @router.get("/model_core", status_code=status.HTTP_200_OK)
 async def get_data(controller: DTCController = Depends(get_dtc_controller)) -> DeciceDigitalTwin | None:
     return controller.digital_twin
+
 
 @router.get("/settings/", status_code=status.HTTP_200_OK)
 async def get_settings() -> ServiceSettings:

@@ -1,12 +1,12 @@
 """
 
-    Examon - Big data tools interface
+Examon - Big data tools interface
 
-    Created on 05/07/2019, 8:22:22 PM
+Created on 05/07/2019, 8:22:22 PM
 
-    @author:francesco.beneventi@unibo.it
+@author:francesco.beneventi@unibo.it
 
-    (c) 2017 University of Bologna, [Department of Electrical, Electronic and Information Engineering, DEI]
+(c) 2017 University of Bologna, [Department of Electrical, Electronic and Information Engineering, DEI]
 
 """
 
@@ -22,27 +22,37 @@ client = None
 
 
 class ExBase(object):
-
     def __init__(self, ex):
         self.ex = ex
         self.q_slices = []
 
-    def query(self, tstart, tstop, metric_names, tags=None, groupby=None, aggrby=None, limit=None, time_zone='Europe/Rome', batch_size=30*60*1000):
+    def query(
+        self,
+        tstart,
+        tstop,
+        metric_names,
+        tags=None,
+        groupby=None,
+        aggrby=None,
+        limit=None,
+        time_zone="Europe/Rome",
+        batch_size=30 * 60 * 1000,
+    ):
         query = QueryBuilder()
         query.setStart(tstart)
         query.setEnd(tstop)
         query.addMetric(metric_names)
-        if tags is not None: # put all metric tags by default
+        if tags is not None:  # put all metric tags by default
             query.addTags(tags)
-        if groupby is None: # groupby all
+        if groupby is None:  # groupby all
             taglist = self.ex.get_metric_tagnames(metric_names)
-            query.addGroupby({'name':'tag', 'tags': taglist})
+            query.addGroupby({"name": "tag", "tags": taglist})
         else:
             query.addGroupby(groupby)
         if aggrby is not None:
             query.addAggregator(aggrby)
         query.setLimit(limit)
-        query.setTimezone(time_zone)  #client timezone: where this code is executed
+        query.setTimezone(time_zone)  # client timezone: where this code is executed
 
         print(query.getQuery())
         # add query to batch
@@ -57,9 +67,9 @@ class ExBase(object):
 
 
 class ExSpark(ExBase):
-
     def __init__(self, ex):
         from pyspark.sql import Row
+
         self.Row = Row
         super(ExSpark, self).__init__(ex)
 
@@ -81,27 +91,28 @@ class ExSpark(ExBase):
 
     def kdb_query_to_rows(self, q):
         ret = self.ex.query_batch(*q)
-        return (self.Row(**{k: None if not v else v for k, v in list(x.items()) }) for x in ret.to_dict())
+        return (self.Row(**{k: None if not v else v for k, v in list(x.items())}) for x in ret.to_dict())
 
 
 class ExDask(ExBase):
-
     def __init__(self, ex):
         import dask.bag as db
+
         self.db = db
-        #self.client = None
+        # self.client = None
         super(ExDask, self).__init__(ex)
 
     def dask(self, dask_client=None, **client_kwargs):
         global client
-        
+
         if client is None:
             if dask_client is None:
                 from dask.distributed import Client
+
                 client = Client(**client_kwargs)
             else:
                 client = dask_client
-        #client.cluster
+        # client.cluster
         return self
 
     def close(self):

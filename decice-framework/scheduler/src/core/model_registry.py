@@ -22,13 +22,6 @@ class ModelMetadata(BaseModel):
 class ModelRegistry:
     """
     Manages storage, retrieval, and versioning of AI models.
-    Structure:
-      /models/
-        ├── v1_20231124-120000/
-        │   ├── actor.pth
-        │   ├── critic.pth
-        │   └── metadata.json
-        └── current -> v1_20231124-120000 (symlink or reference)
     """
 
     def __init__(self, base_dir: str = "/app/models"):
@@ -47,11 +40,11 @@ class ModelRegistry:
         model_dir = self.base_dir / version_id
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Save Weights (Delegated to agent)
+        # Save Weights (Delegated to agent)
         # Assuming agent has a save method that takes a directory
         agent.save(str(model_dir))
 
-        # 2. Save Metadata
+        # Save Metadata
         metadata = ModelMetadata(
             version_id=version_id,
             created_at=datetime.now().isoformat(),

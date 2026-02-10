@@ -26,11 +26,7 @@ def convert_device_response_list(
                 )
             )
         else:
-            devices.append(
-                DeviceInVp(
-                    id=dev.device_id, name=dev.devicename, ip=dev.ip, labels=dev_labels
-                )
-            )
+            devices.append(DeviceInVp(id=dev.device_id, name=dev.devicename, ip=dev.ip, labels=dev_labels))
     return devices
 
 

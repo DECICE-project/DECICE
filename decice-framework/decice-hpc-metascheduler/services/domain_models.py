@@ -4,12 +4,14 @@ from uuid import UUID
 from datetime import datetime
 from schemas import JobState, ClusterType
 
+
 class Job:
     """
     The business domain model for a Job.
     It represents a job's state and identity within our application's core logic,
     decoupled from both the database and the API schemas.
     """
+
     def __init__(
         self,
         jobId: UUID,
@@ -17,7 +19,7 @@ class Job:
         status: JobState,
         targetCluster: ClusterType,
         creationTimestamp: datetime,
-        userId: str
+        userId: str,
     ):
         self.jobId = jobId
         self.name = name

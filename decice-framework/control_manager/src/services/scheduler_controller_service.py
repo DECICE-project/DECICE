@@ -4,7 +4,9 @@ from typing import Any
 from fastapi import Depends
 
 from clients.scheduler_controller.client import (
-    SchedulerControllerClient, get_scheduler_controller_client)
+    SchedulerControllerClient,
+    get_scheduler_controller_client,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -31,9 +31,7 @@ def read_settings(settings_path=SETTINGS_PATH) -> Settings:
         key, value = yaml_data.get(SETTING_NETWORK_EXPORTER_LABEL).split("=")
         api_port = int(yaml_data.get(SETTINGS_API_PORT))
         exporter_port = int(yaml_data.get(SETTINGS_EXPORTER_PORT))
-        exporter_vertexpools_endpoint = yaml_data.get(
-            SETTINGS_EXPORTER_VERTEXPOOLS_ENDPOINT
-        )
+        exporter_vertexpools_endpoint = yaml_data.get(SETTINGS_EXPORTER_VERTEXPOOLS_ENDPOINT)
 
         promql_data: dict | None = yaml_data.get("promql")
         promql_settings = PromQLSettings(**(promql_data or {}))

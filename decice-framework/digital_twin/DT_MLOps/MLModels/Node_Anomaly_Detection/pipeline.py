@@ -5,11 +5,13 @@ from kfp import dsl
 from kfp.components import load_component_from_text
 from kfp.compiler import Compiler
 
+
 def anomaly_detection():
 
     import os
 
     os.system("docker run fatemehbozorgi/test-repo:latest")
+
 
 anomaly_detection_op = load_component_from_text("""
 name: Anomaly Detection Component
@@ -33,22 +35,14 @@ implementation:
 """)
 
 
-@dsl.pipeline(
-    name="Anomaly Detection Pipeline",
-    description="A pipeline to detect anomalies in data."
-)
-def anomaly_detection_pipeline(prometheus_url: str, polling_interval: int, name: str, type_: str):  
+@dsl.pipeline(name="Anomaly Detection Pipeline", description="A pipeline to detect anomalies in data.")
+def anomaly_detection_pipeline(prometheus_url: str, polling_interval: int, name: str, type_: str):
     anomaly_detection_task = anomaly_detection_op(
-        prometheus_url=prometheus_url,
-        polling_interval=polling_interval,
-        name=name,
-        type=type_  
+        prometheus_url=prometheus_url, polling_interval=polling_interval, name=name, type=type_
     )
-
 
 
 if __name__ == "__main__":
     # client = kfp.Client()
-    Compiler().compile(anomaly_detection_pipeline, 'anomaly_detection_pipeline.yaml')
+    Compiler().compile(anomaly_detection_pipeline, "anomaly_detection_pipeline.yaml")
     print("Pipeline compiled to anomaly_detection_pipeline.yaml")
-

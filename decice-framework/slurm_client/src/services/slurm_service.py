@@ -4,8 +4,12 @@ from fastapi import Depends
 from config.settings import get_settings
 from core.dependencies import get_http_client
 from schemas.accounts import AccountCPUHourQuota
-from schemas.jobs import (SlurmJobSpec, SlurmJobSubmitRequest,
-                          SlurmJobSubmitResponse, SlurmResponse)
+from schemas.jobs import (
+    SlurmJobSpec,
+    SlurmJobSubmitRequest,
+    SlurmJobSubmitResponse,
+    SlurmResponse,
+)
 from schemas.tres import TRES
 from schemas.users import UserAccountingResponse
 

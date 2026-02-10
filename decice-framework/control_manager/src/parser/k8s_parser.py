@@ -5,8 +5,14 @@ from uuid import uuid4
 
 import yaml
 
-from db.models import (Deployment, GenericK8sResource, Job, TaskStatus,
-                       Workflow, WorkflowStatus)
+from db.models import (
+    Deployment,
+    GenericK8sResource,
+    Job,
+    TaskStatus,
+    Workflow,
+    WorkflowStatus,
+)
 
 from .base import AbstractWorkflowParser
 from .registry import ParserRegistry

@@ -13,7 +13,9 @@ router = APIRouter()
 
 
 @router.post("/model_core/", status_code=status.HTTP_201_CREATED)
-async def write_cluster_data(data: DeciceDigitalTwinV1 | DeciceDigitalTwin, controller: DTCController = Depends(get_dtc_controller)):
+async def write_cluster_data(
+    data: DeciceDigitalTwinV1 | DeciceDigitalTwin, controller: DTCController = Depends(get_dtc_controller)
+):
     dict = data.model_dump()
     # if isinstance(data, DeciceDigitalTwinV1): cast it to DeciceDigitalTwin
     if isinstance(data, DeciceDigitalTwinV1):
@@ -28,6 +30,7 @@ async def write_cluster_data(data: DeciceDigitalTwinV1 | DeciceDigitalTwin, cont
     controller.update_digital_twin(data)
     return status.HTTP_201_CREATED
 
+
 @router.get("/model_core/", status_code=status.HTTP_200_OK)
 async def get_data(controller: DTCController = Depends(get_dtc_controller)) -> DeciceDigitalTwinV1 | None:
     # cast DeciceDigitalTwin to DeciceDigitalTwinV1
@@ -40,6 +43,7 @@ async def get_data(controller: DTCController = Depends(get_dtc_controller)) -> D
         )
         return data_converted
     return controller.digital_twin
+
 
 @router.get("/settings/", status_code=status.HTTP_200_OK)
 async def get_settings() -> ServiceSettings:

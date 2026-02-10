@@ -36,17 +36,17 @@ async def get_current_active_user(
     )
 
     try:
-        # 1. Decode Token (AuthService handles JWTError, ExpiredSignatureError -> HTTPException)
+        # Decode Token (AuthService handles JWTError, ExpiredSignatureError -> HTTPException)
         logger.debug("Decoding authentication token.")
         decoded_token = auth_service.decode_token(token)
 
-        # 2. Extract Session ID (assuming 'id' claim holds the session identifier)
+        # Extract Session ID (assuming 'id' claim holds the session identifier)
         session_id = decoded_token.id
         if not session_id:
             logger.warning("Token valid but missing 'id' (session ID) claim.")
             raise credentials_exception
 
-        # 3. Retrieve User from Session Cache
+        # Retrieve User from Session Cache
         logger.debug(f"Retrieving user for session ID: {session_id}")
         try:
             user = await user_session.get_user(session_id)
@@ -55,7 +55,7 @@ async def get_current_active_user(
             logger.warning(f"Session ID '{session_id}' not found in session cache.")
             raise credentials_exception
 
-        # 4. Check if User is Active
+        # Check if User is Active
         if not getattr(user, "active", False):  # Safely check for 'active' attribute
             logger.warning(
                 f"User '{user.username}' (Session: {session_id}) attempted access but is inactive."
@@ -64,7 +64,7 @@ async def get_current_active_user(
 
         logger.debug(f"Authenticated active user: {user.username}")
 
-        # 5. Return validated, active user
+        # Return validated, active user
         return user
 
     except HTTPException as e:

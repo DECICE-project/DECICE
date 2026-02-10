@@ -25,7 +25,7 @@ async def start_training(
     """
     Start a training run.
     """
-    # 1. Validate Model Definition
+    # Validate Model Definition
     model_config = model_service.get_scheduler_definition(request.scheduler_name)
     if not model_config:
         raise HTTPException(
@@ -33,7 +33,7 @@ async def start_training(
             detail=f"Scheduler definition '{request.scheduler_name}' not found.",
         )
 
-    # 2. Submit Job (Service now validates Dataset internally)
+    # Submit Job (Service now validates Dataset internally)
     try:
         return await training_service.start_training_job(
             request, model_config.model_dump()

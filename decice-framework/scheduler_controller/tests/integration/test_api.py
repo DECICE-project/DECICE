@@ -36,8 +36,8 @@ async def test_scheduler_controller_endpoint_success(
     THEN it should return a 201 Created with the mocked service response.
     """
     app.dependency_overrides[verify_internal_traffic] = lambda: True
-    app.dependency_overrides[get_orchestration_service] = (
-        lambda: mock_orchestration_service
+    app.dependency_overrides[get_orchestration_service] = lambda: (
+        mock_orchestration_service
     )
 
     client = TestClient(app)
@@ -74,8 +74,8 @@ async def test_scheduler_controller_endpoint_validation_error(
     THEN it should return 422 Unprocessable Entity.
     """
     app.dependency_overrides[verify_internal_traffic] = lambda: True
-    app.dependency_overrides[get_orchestration_service] = (
-        lambda: mock_orchestration_service
+    app.dependency_overrides[get_orchestration_service] = lambda: (
+        mock_orchestration_service
     )
     client = TestClient(app)
 

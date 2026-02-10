@@ -5,8 +5,11 @@ import pytest
 from fastapi import UploadFile
 
 from db.models import TaskStatus, Workflow, WorkflowTask
-from domain.schemas import (PSGCTaskStatusUpdateRequest, WorkflowCreateRequest,
-                            WorkflowStatus)
+from domain.schemas import (
+    PSGCTaskStatusUpdateRequest,
+    WorkflowCreateRequest,
+    WorkflowStatus,
+)
 from domain.user_schemas import PlatformIdentityResponse
 from domain.user_schemas import User as UserSchema
 from domain.user_schemas import UserRole

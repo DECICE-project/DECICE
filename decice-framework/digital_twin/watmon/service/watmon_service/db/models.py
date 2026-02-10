@@ -12,9 +12,7 @@ class VertexpoolDB(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     devices: Mapped[list["DeviceDB"]] = relationship(back_populates="vertexpool")
     nodes: Mapped[list["NodeDB"]] = relationship(back_populates="vertexpool")
-    labels: Mapped[list["Vertexpool_LabelDB"]] = relationship(
-        back_populates="vertexpool", cascade="all, delete-orphan"
-    )
+    labels: Mapped[list["Vertexpool_LabelDB"]] = relationship(back_populates="vertexpool", cascade="all, delete-orphan")
 
 
 class Vertexpool_LabelDB(Base):
@@ -37,9 +35,7 @@ class DeviceDB(Base):
     vertexpool: Mapped[VertexpoolDB] = relationship(
         back_populates="devices",
     )
-    labels: Mapped[list["Device_LabelDB"]] = relationship(
-        back_populates="device", cascade="all, delete-orphan"
-    )
+    labels: Mapped[list["Device_LabelDB"]] = relationship(back_populates="device", cascade="all, delete-orphan")
 
 
 class Device_LabelDB(Base):

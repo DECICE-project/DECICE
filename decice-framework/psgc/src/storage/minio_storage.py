@@ -4,8 +4,7 @@ from datetime import timedelta
 from minio import Minio, S3Error
 from minio.notificationconfig import NotificationConfig, QueueConfig
 
-from .abstract_storage import (BucketCreationError, ObjectStorage,
-                               PresignedUrlError)
+from .abstract_storage import BucketCreationError, ObjectStorage, PresignedUrlError
 
 logger = logging.getLogger(__name__)
 

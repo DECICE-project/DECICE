@@ -1,7 +1,9 @@
 import pytest
 
 from strategies.load_based_scheduling import (
-    calculate_throughput_from_allocations, schedule)
+    calculate_throughput_from_allocations,
+    schedule,
+)
 
 
 @pytest.fixture

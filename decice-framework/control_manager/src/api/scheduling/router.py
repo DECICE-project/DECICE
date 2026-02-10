@@ -8,12 +8,15 @@ from pydantic import BaseModel, field_serializer
 from auth.auth import verify_internal_traffic
 from auth.dependencies import get_current_active_user
 from domain.schemas import PaginatedSchedulingDecisionsResponse, TaskStatus
-from services.promql_wrapper_service import (PromQLWrapperService,
-                                             get_promql_wrapper_service)
+from services.promql_wrapper_service import (
+    PromQLWrapperService,
+    get_promql_wrapper_service,
+)
 from services.scheduler_controller_service import (
-    SchedulerControllerService, get_scheduler_controller_service)
-from services.scheduling_service import (SchedulingService,
-                                         get_scheduling_service)
+    SchedulerControllerService,
+    get_scheduler_controller_service,
+)
+from services.scheduling_service import SchedulingService, get_scheduling_service
 from services.workflow_service import WorkflowService, get_workflow_service
 
 logger = logging.getLogger(__name__)

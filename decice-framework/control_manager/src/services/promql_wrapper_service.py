@@ -3,8 +3,7 @@ from typing import Any
 
 from fastapi import Depends, HTTPException
 
-from clients.promql_wrapper.client import (PromQLWrapperClient,
-                                           get_promql_wrapper_client)
+from clients.promql_wrapper.client import PromQLWrapperClient, get_promql_wrapper_client
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,18 @@ import uuid
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import (JSON, Boolean, DateTime, Enum, ForeignKey, Integer,
-                        String, UniqueConstraint, Uuid, func)
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    Uuid,
+    func,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from domain.schemas import TaskStatus, WorkflowStatus

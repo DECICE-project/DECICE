@@ -3,9 +3,13 @@ from uuid import UUID
 import pytest
 
 # Import the classes to test from the new 'task' module
-from core.features.task import (TaskGpuIsRequiredExtractor, TaskIdExtractor,
-                                TaskRequiredCpuExtractor,
-                                TaskRequiredMemoryExtractor)
+from core.features.task import (
+    TaskGpuIsRequiredExtractor,
+    TaskIdExtractor,
+    TaskRequiredCpuExtractor,
+    TaskRequiredMemoryExtractor,
+)
+
 # Import fixtures
 from core.schemas import HardwareRequirements, ScheduleRequest, Task
 

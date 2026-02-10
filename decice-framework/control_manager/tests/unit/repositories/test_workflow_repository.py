@@ -8,8 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import TaskStatus, Workflow, WorkflowTask
 from domain.schemas import WorkflowStatus
-from repositories.workflow_repository import (WorkflowRepository,
-                                              get_workflow_repository)
+from repositories.workflow_repository import WorkflowRepository, get_workflow_repository
 
 
 @pytest.fixture
@@ -226,9 +225,10 @@ async def test_find_ready_downstream_tasks_with_dependencies_ready(
     # Mock check_task_dependencies_met to return True
     workflow_repository.check_task_dependencies_met = AsyncMock(return_value=True)
 
-    ready_tasks, returned_workflow_id = (
-        await workflow_repository.find_ready_downstream_tasks(completed_task_id)
-    )
+    (
+        ready_tasks,
+        returned_workflow_id,
+    ) = await workflow_repository.find_ready_downstream_tasks(completed_task_id)
 
     assert len(ready_tasks) == 1
     assert ready_tasks[0].id == downstream_task_id
@@ -255,9 +255,10 @@ async def test_find_ready_downstream_tasks_with_dependencies_not_ready(
     # Mock check_task_dependencies_met to return False
     workflow_repository.check_task_dependencies_met = AsyncMock(return_value=False)
 
-    ready_tasks, returned_workflow_id = (
-        await workflow_repository.find_ready_downstream_tasks(completed_task_id)
-    )
+    (
+        ready_tasks,
+        returned_workflow_id,
+    ) = await workflow_repository.find_ready_downstream_tasks(completed_task_id)
 
     # Should be empty because dependency check returned False
     assert ready_tasks == []

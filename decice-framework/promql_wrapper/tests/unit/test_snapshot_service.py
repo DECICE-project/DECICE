@@ -74,9 +74,9 @@ class TestSnapshotService:
                 if node.name == "test-node-01":
                     found_node = True
                     break
-        assert (
-            found_node
-        ), "The test node from the mock Prometheus was not found in the final snapshot"
+        assert found_node, (
+            "The test node from the mock Prometheus was not found in the final snapshot"
+        )
 
     async def test_snapshot_propagates_prometheus_exception(
         self, mock_dt_client: AsyncMock, mock_prometheus_client: AsyncMock, monkeypatch

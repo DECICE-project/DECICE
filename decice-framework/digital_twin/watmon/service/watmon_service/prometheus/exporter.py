@@ -27,9 +27,7 @@ class MetricUpdater:
             else:
                 labels = ""
 
-            DECICE_VERTEXPOOL_LABELS.labels(
-                vertexpool_id=vertexpool.id, vertexpool_labels=labels
-            ).set(1.0)
+            DECICE_VERTEXPOOL_LABELS.labels(vertexpool_id=vertexpool.id, vertexpool_labels=labels).set(1.0)
 
     async def update_devices(self):
         devices = await self.vertexpool_manager.get_devices()
@@ -51,9 +49,7 @@ class MetricUpdater:
             else:
                 labels = ""
 
-            DECICE_DEVICE_LABELS.labels(
-                device_id=device.device_id, device_labels=labels
-            ).set(1)
+            DECICE_DEVICE_LABELS.labels(device_id=device.device_id, device_labels=labels).set(1)
 
     async def update_nodes(self):
         nodes = await self.vertexpool_manager.get_nodes()

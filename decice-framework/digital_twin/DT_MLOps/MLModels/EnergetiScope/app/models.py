@@ -2,6 +2,7 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
+
 class ContainerSpec(BaseModel):
     name: str
     image: str
@@ -11,6 +12,7 @@ class ContainerSpec(BaseModel):
     req_mem_mib: Optional[int] = None
     lim_cpu_mcpu: Optional[int] = None
     lim_mem_mib: Optional[int] = None
+
 
 class InferenceRequest(BaseModel):
     schema_version: str = Field(default="v1")
@@ -29,6 +31,7 @@ class InferenceRequest(BaseModel):
     # Jobs-only hints (optional)
     parallelism: Optional[int] = None
     completions: Optional[int] = None
+
 
 class InferenceResponse(BaseModel):
     schema_version: str = Field(default="v1")

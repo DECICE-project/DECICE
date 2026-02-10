@@ -4,11 +4,12 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GroupKFold
 from sklearn.metrics import mean_absolute_error, r2_score
 
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--train", required=True)  # ./data/train_rows.parquet
-    p.add_argument("--target", choices=["avg_power_w","energy_step_j","total_energy_j"], default="avg_power_w")
-    p.add_argument("--out", required=True)   # model path
+    p.add_argument("--target", choices=["avg_power_w", "energy_step_j", "total_energy_j"], default="avg_power_w")
+    p.add_argument("--out", required=True)  # model path
     p.add_argument("--neighbors", type=int, default=5)
     args = p.parse_args()
 
@@ -20,8 +21,7 @@ def main():
     keep = np.isfinite(y)
     X, y, df = X[keep], y[keep], df.loc[keep]
     if len(y) == 0:
-        raise SystemExit(f"No finite values for target '{args.target}'. "
-                         f"Try --target energy_step_j or fix labels.")
+        raise SystemExit(f"No finite values for target '{args.target}'. Try --target energy_step_j or fix labels.")
 
     # group by workload to avoid leakage
     groups = df["workload_name"].astype(str).to_numpy()
@@ -46,6 +46,7 @@ def main():
     model.fit(X, y)
     joblib.dump(model, args.out)
     print(f"[OK] saved model to {args.out}")
+
 
 if __name__ == "__main__":
     main()

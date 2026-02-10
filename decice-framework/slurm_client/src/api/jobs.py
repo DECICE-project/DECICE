@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, status
 
 from auth.auth import verify_internal_traffic
-from schemas.jobs import (SlurmClientRequest, SlurmEpilogResponse,
-                          SlurmJobSubmitResponse, SlurmResponse)
+from schemas.jobs import (
+    SlurmClientRequest,
+    SlurmEpilogResponse,
+    SlurmJobSubmitResponse,
+    SlurmResponse,
+)
 from services.slurm_service import SlurmService, get_slurm_service
 from services.token_service import TokenService, get_token_service
 from utils.handle_errors import handle_errors

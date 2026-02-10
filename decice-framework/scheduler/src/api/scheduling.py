@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from auth.auth import verify_internal_traffic
 from core.schemas import ScheduleRequest, ScheduleResponse
-from services.scheduling_service import (SchedulingService,
-                                         get_scheduling_service)
+from services.scheduling_service import SchedulingService, get_scheduling_service
 
 logger = logging.getLogger(__name__)
 schedule_router = APIRouter()
@@ -26,7 +25,7 @@ async def schedule_jobs_api(
     Receives a list of jobs and available nodes, then uses the SchedulingService
     to process them through the AI pipeline and return the final placement decisions.
     """
-    logger.info(f"Received scheduling request" f"Tasks: {request_data.tasks}")
+    logger.info(f"Received scheduling requestTasks: {request_data.tasks}")
     try:
         scheduler_response = service.process_schedule(request_data)
         return scheduler_response

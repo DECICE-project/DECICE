@@ -8,8 +8,7 @@ from config.config import get_settings
 from core.ai_scheduler import AIScheduler
 from core.db import db as db_module
 from core.db.models import Base
-from core.features.factory import (create_data_transformer,
-                                   create_feature_engineer)
+from core.features.factory import create_data_transformer, create_feature_engineer
 from core.fuzzy_storage import FuzzyStorageResourcesAccessGate
 from core.kairos import Kairos
 from strategy_loader import StrategyFactory

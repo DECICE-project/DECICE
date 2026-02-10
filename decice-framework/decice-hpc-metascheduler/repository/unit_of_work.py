@@ -8,6 +8,7 @@ from sqlalchemy.orm.session import Session
 # Import our repository class
 from .job_repository import JobRepository
 
+
 class UnitOfWork:
     """
     A context manager that provides a transactional scope around a series of operations.
@@ -23,10 +24,8 @@ class UnitOfWork:
         # In a real application, you'd have better config management.
         # Defaulting to a local SQLite DB for development if the env var is not set.
         db_url = os.getenv("DATABASE_URL", "sqlite:///./database.db")
-        
-        self.session_factory = sessionmaker(
-            bind=create_engine(db_url)
-        )
+
+        self.session_factory = sessionmaker(bind=create_engine(db_url))
         self.session: Session = None
 
     def __enter__(self):
@@ -35,11 +34,11 @@ class UnitOfWork:
         Creates a new database session and instantiates repositories.
         """
         self.session = self.session_factory()
-        
+
         # Instantiate all repositories that are part of this unit of work.
         # The repositories will share the same database session.
         self.jobs = JobRepository(self.session)
-        
+
         return self
 
     def __exit__(self, exc_type, exc_val, traceback):
@@ -51,7 +50,7 @@ class UnitOfWork:
         if exc_type:
             # If an exception occurred, roll back the transaction.
             self.rollback()
-        
+
         # Always close the session to release the connection.
         self.session.close()
 

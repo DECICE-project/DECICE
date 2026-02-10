@@ -79,17 +79,15 @@ def _update_vertexpool(
             return vertexpool
 
 
-async def get_agent_pod_ips(
-    label_key: str, label_value: str, prom: PrometheusAsync
-) -> list[str]:
+async def get_agent_pod_ips(label_key: str, label_value: str, prom: PrometheusAsync) -> list[str]:
     """Get the IPs of all pods with the specified label."""
     prom_lk = f"label_{label_key}"
-    query_string = f"kube_pod_ips * on(pod) group_left({prom_lk}) kube_pod_labels{make_label_string(**{prom_lk: label_value})}"
+    query_string = (
+        f"kube_pod_ips * on(pod) group_left({prom_lk}) kube_pod_labels{make_label_string(**{prom_lk: label_value})}"
+    )
     response_model = await prom.query(query_string)
     return_list = [
-        metric.get("ip")
-        for metric, ts_value in response_model.to_metric_map().items()
-        if ts_value.latest().value == 1
+        metric.get("ip") for metric, ts_value in response_model.to_metric_map().items() if ts_value.latest().value == 1
     ]
     return return_list
 
@@ -112,9 +110,7 @@ async def get_vertexpools(prom: PrometheusAsync) -> list[PromVertexpool]:
     for metric, ts in resp_map.items():
         vertexpool_id: int = int(metric.get("vertexpool_id"))
         if vertexpool_id not in vertexpool_dict:
-            vertexpool_dict[vertexpool_id] = _update_vertexpool(
-                metric, ts.latest().timestamp
-            )
+            vertexpool_dict[vertexpool_id] = _update_vertexpool(metric, ts.latest().timestamp)
         else:
             vertexpool_dict[vertexpool_id] = _update_vertexpool(
                 metric, ts.latest().timestamp, vertexpool_dict[vertexpool_id]
@@ -145,19 +141,16 @@ def get_edges_base_query_string(
         + "label_replace(avg_over_time(decice_ping_latency_ms{target_type='device'%s}[%s]), 'device_id', '$1', 'target_device_id', '(.*)')"
         % (node_filter, interval)
         + "* on(nodename) group_left(self_vertexpool_id)"
-        + "label_replace(decice_node_info{%s},'self_vertexpool_id','$1','vertexpool_id','(.*)')"
-        % (vertexpool_id)
+        + "label_replace(decice_node_info{%s},'self_vertexpool_id','$1','vertexpool_id','(.*)')" % (vertexpool_id)
         + "* on(device_id) group_left(target_vertexpool_id)"
         + "label_replace(decice_device_info{%s} , 'target_vertexpool_id' , '$1', 'vertexpool_id', '(.*)')"
         % (vertexpool_id)
         + ")"
         + "OR"
         + "("
-        + "avg_over_time(decice_ping_latency_ms{target_type='node'%s}[%s])"
-        % (node_filter, interval)
+        + "avg_over_time(decice_ping_latency_ms{target_type='node'%s}[%s])" % (node_filter, interval)
         + "* on(nodename) group_left(self_vertexpool_id)"
-        + "label_replace(decice_node_info{%s},'self_vertexpool_id','$1','vertexpool_id','(.*)')"
-        % (vertexpool_id)
+        + "label_replace(decice_node_info{%s},'self_vertexpool_id','$1','vertexpool_id','(.*)')" % (vertexpool_id)
         + "*on(target_name) group_left(target_vertexpool_id)"
         + "label_replace(label_replace(decice_node_info{%s},'target_vertexpool_id','$1','vertexpool_id','(.*)'),'target_name','$1','nodename','(.*)')"
         % (vertexpool_id)
@@ -192,20 +185,14 @@ async def get_vertexpool_links(
     resp_metric = resp.to_metric_map()
     return_list: list[LinkLatencyMs] = []
     for metric, ts in resp_metric.items():
-        link = LinkLatencyMs(
-            **_filter_dict_for_model(
-                metric.dict, LinkLatencyMs, value=ts.latest().value
-            )
-        )
+        link = LinkLatencyMs(**_filter_dict_for_model(metric.dict, LinkLatencyMs, value=ts.latest().value))
         link.lastUpdated = value = ts.latest().timestamp
         return_list.append(link)
     if unidirectional:
         unidirectional_links = []
         uni_link_dictionary: dict[tuple[str, str], float] = {}
         for link in return_list:
-            link_tuple = tuple(
-                sorted((link.self_vertexpool_id, link.target_vertexpool_id))
-            )
+            link_tuple = tuple(sorted((link.self_vertexpool_id, link.target_vertexpool_id)))
             if link_tuple not in uni_link_dictionary:
                 uni_link_dictionary[link_tuple] = link.value
             else:
@@ -238,17 +225,13 @@ async def get_node_to_x_latency(
 
     unidirectional flag can be set to True to return unidirectional link avarages only.
     """
-    query = get_edges_base_query_string(
-        nodename=nodename, vertexpool_selector=vertexpool_selector, interval=interval
-    )
+    query = get_edges_base_query_string(nodename=nodename, vertexpool_selector=vertexpool_selector, interval=interval)
     resp = await prom.query(query)
     resp_metric = resp.to_metric_map()
     return_list: list[RawNodeLinkLatencyMs] = []
     for metric, ts in resp_metric.items():
         link = RawNodeLinkLatencyMs(
-            **_filter_dict_for_model(
-                metric.dict, RawNodeLinkLatencyMs, value=ts.latest().value
-            )
+            **_filter_dict_for_model(metric.dict, RawNodeLinkLatencyMs, value=ts.latest().value)
         )
         link.lastUpdated = ts.latest().timestamp
         return_list.append(link)
@@ -265,13 +248,9 @@ async def get_node_to_x_latency(
             link_tuple = tuple(sorted((link.nodename, link.target_name)))
             if link.target_device_id:
                 if link.nodename == link_tuple[0]:
-                    vertex_b_device_id_dictionary[link_tuple] = int(
-                        link.target_device_id
-                    )
+                    vertex_b_device_id_dictionary[link_tuple] = int(link.target_device_id)
                 else:
-                    vertex_a_device_id_dictionary[link_tuple] = int(
-                        link.target_device_id
-                    )
+                    vertex_a_device_id_dictionary[link_tuple] = int(link.target_device_id)
 
             if link_tuple not in uni_link_dictionary:
                 uni_link_dictionary[link_tuple] = link.value
@@ -318,9 +297,7 @@ async def construct_typed_graph(
             tg.add_node(nxnode)
         else:
             devname = metric.get("devicename")
-            nxdevice = NetworkxNode(
-                name=devname, type="device", device_id=metric.get("device_id")
-            )
+            nxdevice = NetworkxNode(name=devname, type="device", device_id=metric.get("device_id"))
             tg.add_node(nxdevice)
 
     # Get edges from Prometheus
@@ -339,8 +316,6 @@ async def construct_typed_graph(
         tg.add_edge_from_key(
             src_key=src_node,
             dst_key=dst_node,
-            edge=NetworkxEdge(
-                label=metric.get("network_delay_ms"), weight=latest_value
-            ),
+            edge=NetworkxEdge(label=metric.get("network_delay_ms"), weight=latest_value),
         )
     return tg

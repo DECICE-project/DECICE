@@ -9,6 +9,7 @@ from enum import Enum
 
 # --- Enumerations ---
 
+
 class ClusterType(str, Enum):
     VOLCANO = "VOLCANO"
     INTERLINK_SLURM = "INTERLINK_SLURM"
@@ -25,11 +26,13 @@ class JobState(str, Enum):
 
 # --- Pydantic Models (Schemas) ---
 
+
 class JobSubmissionSchema(BaseModel):
     """
     Defines the essential properties of a job for submission.
     Corresponds to the JobSubmissionSchema in the OpenAPI specification.
     """
+
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(..., json_schema_extra={"example": "my-first-simulation"})
@@ -42,8 +45,9 @@ class JobStatusSchema(BaseModel):
     Represents the current status and details of a job.
     Corresponds to the JobStatusSchema in the OpenAPI specification.
     """
+
     model_config = ConfigDict(extra="forbid")
-    
+
     jobId: UUID
     name: str
     status: JobState
@@ -58,10 +62,12 @@ class JobListSchema(BaseModel):
     A paginated list of jobs.
     Corresponds to the JobListSchema in the OpenAPI specification.
     """
+
     model_config = ConfigDict(extra="forbid")
-    
+
     total: int
     jobs: List[JobStatusSchema]
+
 
 class PlacementSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")

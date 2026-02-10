@@ -3,8 +3,7 @@ import re
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import (BaseModel, ConfigDict, Field, field_serializer,
-                      field_validator)
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class HardwareRequirements(BaseModel):
@@ -16,7 +15,7 @@ class HardwareRequirements(BaseModel):
     def convert_cpu(cls, v):
         if v is None:
             return 1
-        
+
         if isinstance(v, str) and v.endswith("m"):
             cores = int(v[:-1]) / 1000
             return int(-(-cores // 1))
@@ -26,10 +25,10 @@ class HardwareRequirements(BaseModel):
     def set_mem_req(cls, v):
         if v is None:
             return 128
-        
+
         if not isinstance(v, str):
-            return int(v) 
-        
+            return int(v)
+
         if not isinstance(v, str):
             raise ValueError("memory must be a string")
 
@@ -241,7 +240,6 @@ class Job(BaseModel):
 
 
 class ClusterState(BaseModel):
-
     lastUpdated: Optional[float] = Field(
         None, description="When was this data last updated, in epoch time .", ge=0.0
     )

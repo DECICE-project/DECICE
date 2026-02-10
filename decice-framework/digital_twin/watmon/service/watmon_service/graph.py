@@ -81,9 +81,7 @@ class TypedGraph:
         dst_node = self.node_index[dst_key]
         self.add_edge(src_node, dst_node, edge)
 
-    def get_structural_equivalence(
-        self, at_least_one_member: bool = False
-    ) -> list[list[NetworkxNode]]:
+    def get_structural_equivalence(self, at_least_one_member: bool = False) -> list[list[NetworkxNode]]:
         """Finds structurally equivalent nodes in the graph."""
         # graph: dict {node: [outgoing_neighbors]}
         in_neighbors = defaultdict(set)

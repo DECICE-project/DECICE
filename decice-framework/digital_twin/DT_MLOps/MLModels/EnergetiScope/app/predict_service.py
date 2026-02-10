@@ -6,8 +6,8 @@ import io, yaml
 from joblib import load
 from typing import Dict, Any, List
 
-from k8s_encode import K8sEncoder, _flat_row    # reuse your encoder utils
-from models import InferenceRequest             # your schema
+from k8s_encode import K8sEncoder, _flat_row  # reuse your encoder utils
+from models import InferenceRequest  # your schema
 from k8s_collect import podtemplate_to_request
 
 # path ="/opt/local-path-provisioner/pvc-dde8a16d-5550-41b8-ac85-e75d5e49b7fc_energy_podpower-data"
@@ -16,13 +16,13 @@ from k8s_collect import podtemplate_to_request
 # MOD_PATH = os.getenv("MODEL_PATH",   path+"/knn_energy.joblib")
 
 ENC_PATH = os.getenv("ENCODER_PATH", "/artifacts/encoder.joblib")
-MOD_PATH = os.getenv("MODEL_PATH",   "/artifacts/knn_energy.joblib")
-
+MOD_PATH = os.getenv("MODEL_PATH", "/artifacts/knn_energy.joblib")
 
 
 app = FastAPI()
 enc = K8sEncoder.load(ENC_PATH)
 model = load(MOD_PATH)
+
 
 class PredictOut(BaseModel):
     pred_energy_step_j: float
@@ -30,6 +30,7 @@ class PredictOut(BaseModel):
     workload_name: str
     namespace: str
     spec_hash: str
+
 
 @app.post("/predict", response_model=PredictOut)
 def predict(ir: InferenceRequest):
@@ -90,7 +91,9 @@ def infer_from_yaml(yaml_text: str = Body(..., media_type="text/plain")):
     return irs
 
 
-@app.post("/predict/from-yaml", tags=["Prediction"], summary="Predict directly from YAML manifest", response_model=PredictOut)
+@app.post(
+    "/predict/from-yaml", tags=["Prediction"], summary="Predict directly from YAML manifest", response_model=PredictOut
+)
 def predict_from_yaml(yaml_text: str = Body(..., media_type="text/plain")):
     try:
         docs = list(yaml.safe_load_all(io.StringIO(yaml_text)))
@@ -113,5 +116,7 @@ def predict_from_yaml(yaml_text: str = Body(..., media_type="text/plain")):
         namespace=m["namespace"],
         spec_hash=m["_spec_hash"],
     )
+
+
 if __name__ == "__main__":
     uvicorn.run("predict_service:app", host="0.0.0.0", port=8000)

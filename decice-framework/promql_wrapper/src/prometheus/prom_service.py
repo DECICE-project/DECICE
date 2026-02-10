@@ -7,12 +7,22 @@ from aiopromql.models.core import MetricLabelSet, TimeSeries
 
 from models.models import Device, Link, Metrics, Node, Vertexpool
 
-from .promql_queries import (BANDWIDTH, CPU_CORES, CPU_USAGE, FREE_DISK_GB,
-                             MEMORY_USAGE, TOTAL_DISK_GB, TOTAL_MEMORY,
-                             VP_DEVICE_INFO, VP_LABELS, VP_NODE_INFO,
-                             get_cluster_info_queries, get_node_info_queries,
-                             get_power_consumption_queries,
-                             get_vertexpool_links_string)
+from .promql_queries import (
+    BANDWIDTH,
+    CPU_CORES,
+    CPU_USAGE,
+    FREE_DISK_GB,
+    MEMORY_USAGE,
+    TOTAL_DISK_GB,
+    TOTAL_MEMORY,
+    VP_DEVICE_INFO,
+    VP_LABELS,
+    VP_NODE_INFO,
+    get_cluster_info_queries,
+    get_node_info_queries,
+    get_power_consumption_queries,
+    get_vertexpool_links_string,
+)
 
 
 def normalize_url(url: str, default_scheme="http") -> str:
@@ -29,7 +39,7 @@ class NodeService:
         self.url = normalize_url(prometheus_url)
         self._node_dict: dict[str, Node] = {}
         self.node_info_query = {}
-        
+
         self.node_metric_query_to_attr = {
             BANDWIDTH: "network_bandwidth_mbps",
             CPU_CORES: "cpu_cores",
@@ -39,7 +49,7 @@ class NodeService:
             TOTAL_DISK_GB: "total_disk_gb",
             TOTAL_MEMORY: "mem_total",
         }
-        
+
         power_watts_list = get_power_consumption_queries()
         self.add_node_metric_query(power_watts_list, "power_watts")
         self.apply_node_info_queries()
@@ -71,20 +81,20 @@ class NodeService:
             self._node_dict[nodename] = Node(
                 name=nodename, metrics=Metrics(), id=nodename
             )
-            
+
         if attr_name == "node_info" and value is not None:
             node = self._node_dict[nodename]
             if node.node_info is None:
                 node.node_info = {}
             if node_info_dict_key:
                 node.node_info[node_info_dict_key] = value
-                
+
         elif attr_name and value is not None:
             node = self._node_dict[nodename]
             # Clamp utilization metrics to valid ranges [0, 100]
             if attr_name in ["util", "mem_util"]:
                 value = max(0.0, min(100.0, float(value)))
-            
+
             setattr(node.metrics, attr_name, value)
 
     async def pull_metrics(self):
@@ -95,11 +105,15 @@ class NodeService:
             )
             tasks = [client.query(q) for q in queries]
             responses = await asyncio.gather(*tasks)
-            
+
             for query, resp in zip(queries, responses):
                 node_info_key = self.node_info_query.get(query)
-                att = "node_info" if node_info_key else self.node_metric_query_to_attr.get(query)
-                
+                att = (
+                    "node_info"
+                    if node_info_key
+                    else self.node_metric_query_to_attr.get(query)
+                )
+
                 metric_map = resp.to_metric_map()
                 for labels, timeseries in metric_map.items():
                     labels_dict = labels.dict
@@ -153,13 +167,13 @@ class VertexPoolService:
     def finalize_vertexpools(self) -> list[Vertexpool]:
         """Returns populated Vertexpools."""
         vertexpool_dict: dict[str, Vertexpool] = {}
-        
+
         # Initialize vertexpools from discovered labels
         for vp in self._vertexpools_labels:
             vp_id = vp.get("vertexpool_id")
             if not vp_id:
                 continue
-                
+
             vertexpool = Vertexpool(
                 id=vp_id,
                 nodes=[],
@@ -171,14 +185,14 @@ class VertexPoolService:
                     vertexpool.vertexpool_labels = json.loads(labels_raw)
                 except json.JSONDecodeError:
                     vertexpool.vertexpool_labels = None
-            
+
             vertexpool_dict[vp_id] = vertexpool
 
         # Assign nodes to their respective vertexpools
         for node_metric in self._node_mappings:
             nodename = node_metric.get("nodename")
             vp_id = node_metric.get("vertexpool_id")
-            
+
             if not nodename or not vp_id:
                 continue
 
@@ -188,7 +202,9 @@ class VertexPoolService:
                 if vp_id in vertexpool_dict:
                     vertexpool_dict[vp_id].nodes.append(node)
                 else:
-                    vertexpool_dict[vp_id] = Vertexpool(id=vp_id, nodes=[node], devices=[])
+                    vertexpool_dict[vp_id] = Vertexpool(
+                        id=vp_id, nodes=[node], devices=[]
+                    )
             except KeyError:
                 continue
 

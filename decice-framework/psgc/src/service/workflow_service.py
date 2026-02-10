@@ -4,7 +4,9 @@ from fastapi import Depends
 
 from io_models import PSGCTaskStatusUpdateRequest, WorkflowPSGCRequest
 from repository.redis_workflow_repository import (
-    RedisWorkflowRepository, get_redis_workflow_repository)
+    RedisWorkflowRepository,
+    get_redis_workflow_repository,
+)
 from service.storage_service import StorageService, get_storage_service
 
 logger = logging.getLogger(__name__)

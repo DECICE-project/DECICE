@@ -133,11 +133,13 @@ class PsgcEngine:
         elif is_succeeded:
             final_status = TaskStatus.SUCCEEDED.value
             detail = "Job completed via K8s watcher."
-            
+
             # Release the PVC lock by deleting the completed job
             job_name = job_object.metadata.name
             try:
-                logger.info(f"Task {task_id} succeeded. Deleting K8s Job '{job_name}' to release PVC lock.")
+                logger.info(
+                    f"Task {task_id} succeeded. Deleting K8s Job '{job_name}' to release PVC lock."
+                )
                 await self.k8s_service.delete_job(job_name, "default")
             except Exception as e:
                 logger.warning(f"Failed to auto-delete successful job {job_name}: {e}")
@@ -556,7 +558,7 @@ class PsgcEngine:
             "required_gpu": task_data.get("required_gpu"),
         }
 
-        target_node = None # Default to None
+        target_node = None  # Default to None
 
         if not self.settings.SCHED_WEBHOOK:
             decision: ScheduleResponse = await self.cm_client.get_scheduling_decision(
@@ -667,9 +669,13 @@ class PsgcEngine:
         ]
         volume_mounts = [k8s_client.V1VolumeMount(name="workdir", mount_path="/data")]
 
-        storage_req = task_data.get("annotations", {}).get("dev.decice.com/storage-request")
+        storage_req = task_data.get("annotations", {}).get(
+            "dev.decice.com/storage-request"
+        )
         if not storage_req:
-            storage_req = workflow_definition.get("annotations", {}).get("dev.decice.com/storage-request")
+            storage_req = workflow_definition.get("annotations", {}).get(
+                "dev.decice.com/storage-request"
+            )
 
         if storage_req:
             pvc_name = f"pvc-{workflow_id}"
@@ -702,7 +708,7 @@ class PsgcEngine:
                 args=[
                     "set -ex; "
                     "mc alias set myminio $MINIO_SERVER $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; "
-                    f"mc cp myminio/workflows/{object_key} /data/{filename}; " 
+                    f"mc cp myminio/workflows/{object_key} /data/{filename}; "
                     "ls -l /data;"
                 ],
                 env=[
@@ -726,7 +732,7 @@ class PsgcEngine:
             if filename.lower().endswith(".zip"):
                 unzipper = k8s_client.V1Container(
                     name="unzipper",
-                    image="alpine:latest", 
+                    image="alpine:latest",
                     command=["sh", "-c"],
                     args=[
                         "set -ex; "
@@ -800,7 +806,7 @@ class PsgcEngine:
             "init_containers": init_containers,
             "containers": [main_container],
             "volumes": volumes,
-            "restart_policy": "Never"
+            "restart_policy": "Never",
         }
 
         if target_node:

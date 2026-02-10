@@ -3,8 +3,7 @@ import pandas as pd
 import pytest
 
 from core.features.aggregate import NumAvailableNodes
-from core.features.factory import (create_data_transformer,
-                                   create_feature_engineer)
+from core.features.factory import create_data_transformer, create_feature_engineer
 from core.schemas import ScheduleRequest
 
 

@@ -20,9 +20,7 @@ from fastapi import Request
 class VertexpoolManager:
     """Respsposible for WATMON datasebase interections and triggering callbacks when an update occurs."""
 
-    def __init__(
-        self, session_manager: Callable[[], _AsyncGeneratorContextManager[AsyncSession]]
-    ):
+    def __init__(self, session_manager: Callable[[], _AsyncGeneratorContextManager[AsyncSession]]):
         self.generate_session = session_manager
         self.trigger_callables: list[Callable] = []
         self.async_trigger_callables: list[Callable[..., Awaitable[None]]] = []
@@ -37,14 +35,10 @@ class VertexpoolManager:
         device_labels = []
         for label in labels:
             label.label_key
-            device_labels.append(
-                Device_LabelDB(key=label.label_key, value=label.label_value)
-            )
+            device_labels.append(Device_LabelDB(key=label.label_key, value=label.label_value))
         return device_labels
 
-    async def add_node(
-        self, nodename: str, ip: str, vertexpool_id: int | None = None
-    ) -> NodeDB:
+    async def add_node(self, nodename: str, ip: str, vertexpool_id: int | None = None) -> NodeDB:
         async with self.generate_session() as session:
             try:
                 node = NodeDB(nodename=nodename, vertexpool_id=vertexpool_id, ip=ip)
@@ -84,9 +78,7 @@ class VertexpoolManager:
                 await session.rollback()
                 print("Error:", str(e))
 
-    async def _ensure_vertexpool(
-        self, target: NodeDB | DeviceDB, session: AsyncSession
-    ):
+    async def _ensure_vertexpool(self, target: NodeDB | DeviceDB, session: AsyncSession):
         """Ensures that given vertexpool_id exists in vertexpool table when inserting a Node or Device
 
         If no vertexpool_id specified for Node|Device creates one."""
@@ -100,9 +92,7 @@ class VertexpoolManager:
                 new_vertexpool.devices.append(target)
             session.add(new_vertexpool)
         else:
-            result = await session.execute(
-                select(VertexpoolDB).where(VertexpoolDB.id == target.vertexpool_id)
-            )
+            result = await session.execute(select(VertexpoolDB).where(VertexpoolDB.id == target.vertexpool_id))
             if not result.scalars().all():
                 # given vertexpool_id does not exist
                 new_vertexpool = VertexpoolDB(id=target.vertexpool_id)
@@ -121,9 +111,7 @@ class VertexpoolManager:
 
     async def get_node(self, nodename: str) -> NodeDB | None:
         async with self.generate_session() as session:
-            res = await session.execute(
-                select(NodeDB).where(NodeDB.nodename == nodename)
-            )
+            res = await session.execute(select(NodeDB).where(NodeDB.nodename == nodename))
             return res.scalar_one_or_none()
 
     async def get_vertexpool(self, vertexpool_id) -> VertexpoolDB | None:
@@ -134,9 +122,7 @@ class VertexpoolManager:
                 .where(VertexpoolDB.id == vertexpool_id)
                 .options(selectinload(VertexpoolDB.nodes))
                 .options(selectinload(VertexpoolDB.labels))
-                .options(
-                    selectinload(VertexpoolDB.devices).selectinload(DeviceDB.labels)
-                )
+                .options(selectinload(VertexpoolDB.devices).selectinload(DeviceDB.labels))
             )
             return result.scalar_one_or_none()
 
@@ -198,9 +184,7 @@ class VertexpoolManager:
             await self._trigger_callables("node patched")
             return await self.get_node(nodename)
 
-    async def patch_vertexpool_labels(
-        self, vertexpool_id: int, labels: list[Label] | None = None
-    ):
+    async def patch_vertexpool_labels(self, vertexpool_id: int, labels: list[Label] | None = None):
         async with self.generate_session() as session:
             vertexpool = await self.get_vertexpool(vertexpool_id)
             if not vertexpool:
@@ -221,15 +205,11 @@ class VertexpoolManager:
             await session.commit()
             return await self.get_vertexpool(vertexpool_id)
 
-    async def _edit_vertexes(
-        self, vertex: NodeDB | DeviceDB, new_vertexpool_id: int, session: AsyncSession
-    ):
+    async def _edit_vertexes(self, vertex: NodeDB | DeviceDB, new_vertexpool_id: int, session: AsyncSession):
         old_vertexpool = vertex.vertexpool
         try:
             if new_vertexpool_id is not None:
-                result = await session.execute(
-                    select(VertexpoolDB).filter_by(id=new_vertexpool_id)
-                )
+                result = await session.execute(select(VertexpoolDB).filter_by(id=new_vertexpool_id))
                 existing_vertexpool = result.scalar_one_or_none()
                 if existing_vertexpool:
                     vertex.vertexpool_id = new_vertexpool_id
@@ -254,28 +234,20 @@ class VertexpoolManager:
             await session.rollback()
             print("Error:", str(e))
 
-    async def move_node_to_vertexpool(
-        self, nodename: str, new_vertexpool_id: int | None = None
-    ):
+    async def move_node_to_vertexpool(self, nodename: str, new_vertexpool_id: int | None = None):
         async with self.generate_session() as session:
             result = await session.execute(
-                select(NodeDB)
-                .where(NodeDB.nodename == nodename)
-                .options(selectinload(NodeDB.vertexpool))
+                select(NodeDB).where(NodeDB.nodename == nodename).options(selectinload(NodeDB.vertexpool))
             )
             node = result.scalar_one_or_none()
             if not node:
                 raise HTTPException(status_code=404, detail="Node not found")
             await self._edit_vertexes(node, new_vertexpool_id, session)
 
-    async def move_device_to_vertexpool(
-        self, device_id: int, new_vertexpool_id: int | None = None
-    ):
+    async def move_device_to_vertexpool(self, device_id: int, new_vertexpool_id: int | None = None):
         async with self.generate_session() as session:
             result = await session.execute(
-                select(DeviceDB)
-                .where(DeviceDB.device_id == device_id)
-                .options(selectinload(DeviceDB.vertexpool))
+                select(DeviceDB).where(DeviceDB.device_id == device_id).options(selectinload(DeviceDB.vertexpool))
             )
             device = result.scalar_one_or_none()
             if not device:
@@ -286,17 +258,13 @@ class VertexpoolManager:
         async with self.generate_session() as session:
             try:
                 result = await session.execute(
-                    select(NodeDB)
-                    .where(NodeDB.nodename == nodename)
-                    .options(selectinload(NodeDB.vertexpool))
+                    select(NodeDB).where(NodeDB.nodename == nodename).options(selectinload(NodeDB.vertexpool))
                 )
                 node = result.scalar_one_or_none()
                 if node:
                     await session.delete(node)
                     await session.commit()
-                    await self._check_if_vertexpool_is_orphaned(
-                        node.vertexpool, session
-                    )
+                    await self._check_if_vertexpool_is_orphaned(node.vertexpool, session)
                     await self._trigger_callables("node deleted")
             except Exception as e:
                 await session.rollback()
@@ -306,25 +274,19 @@ class VertexpoolManager:
         async with self.generate_session() as session:
             try:
                 result = await session.execute(
-                    select(DeviceDB)
-                    .where(DeviceDB.device_id == device_id)
-                    .options(selectinload(DeviceDB.vertexpool))
+                    select(DeviceDB).where(DeviceDB.device_id == device_id).options(selectinload(DeviceDB.vertexpool))
                 )
                 device = result.scalar_one_or_none()
                 if device:
                     await session.delete(device)
                     await session.commit()
-                    await self._check_if_vertexpool_is_orphaned(
-                        device.vertexpool, session
-                    )
+                    await self._check_if_vertexpool_is_orphaned(device.vertexpool, session)
                     await self._trigger_callables("device deleted")
             except Exception as e:
                 await session.rollback()
                 print("Error:", str(e))
 
-    async def _check_if_vertexpool_is_orphaned(
-        self, vertexpool: VertexpoolDB, session: AsyncSession
-    ):
+    async def _check_if_vertexpool_is_orphaned(self, vertexpool: VertexpoolDB, session: AsyncSession):
         result = await session.execute(
             select(VertexpoolDB)
             .where(VertexpoolDB.id == vertexpool.id)
@@ -332,9 +294,7 @@ class VertexpoolManager:
             .options(selectinload(VertexpoolDB.devices))
         )
         full_vertexpool = result.scalars().one_or_none()
-        if full_vertexpool and (
-            not full_vertexpool.nodes and not full_vertexpool.devices
-        ):
+        if full_vertexpool and (not full_vertexpool.nodes and not full_vertexpool.devices):
             await session.delete(full_vertexpool)
             await session.commit()
 
@@ -351,9 +311,7 @@ class VertexpoolManager:
     ) -> list[DeviceDB]:
         async with self.generate_session() as session:
             result = await session.execute(
-                select(DeviceDB)
-                .options(selectinload(DeviceDB.labels))
-                .options(selectinload(DeviceDB.vertexpool))
+                select(DeviceDB).options(selectinload(DeviceDB.labels)).options(selectinload(DeviceDB.vertexpool))
             )
             return result.scalars().all()
 
@@ -363,9 +321,7 @@ class VertexpoolManager:
                 select(VertexpoolDB)
                 .options(selectinload(VertexpoolDB.nodes))
                 .options(selectinload(VertexpoolDB.labels))
-                .options(
-                    selectinload(VertexpoolDB.devices).selectinload(DeviceDB.labels)
-                )
+                .options(selectinload(VertexpoolDB.devices).selectinload(DeviceDB.labels))
             )
             return result.scalars().all()
 
@@ -383,30 +339,22 @@ class VertexpoolManager:
                 await session.delete(label)
                 await session.commit()
 
-    async def add_device_label(
-        self, device_id: int, label_key: str, label_value: str
-    ) -> DeviceDB:
+    async def add_device_label(self, device_id: int, label_key: str, label_value: str) -> DeviceDB:
         async with self.generate_session() as session:
             dev = await self.get_device(device_id=device_id)
             if dev:
-                label = Device_LabelDB(
-                    key=label_key, value=label_value, device_id=device_id
-                )
+                label = Device_LabelDB(key=label_key, value=label_value, device_id=device_id)
                 dev.labels.append(label)
                 session.add(dev)
                 await session.commit()
                 return dev
             raise HTTPException(status_code=404, detail="Device not found")
 
-    async def add_vertexpool_label(
-        self, vertexpool_id: int, label_key: str, label_value: str
-    ) -> DeviceDB:
+    async def add_vertexpool_label(self, vertexpool_id: int, label_key: str, label_value: str) -> DeviceDB:
         async with self.generate_session() as session:
             vertexpool = await self.get_vertexpool(vertexpool_id)
             if vertexpool:
-                label = Vertexpool_LabelDB(
-                    key=label_key, value=label_value, vertexpool_id=vertexpool_id
-                )
+                label = Vertexpool_LabelDB(key=label_key, value=label_value, vertexpool_id=vertexpool_id)
                 vertexpool.labels.append(label)
                 session.add(vertexpool)
                 await session.commit()
@@ -423,9 +371,7 @@ async def get_vertexpool_manager(
 ) -> AsyncGenerator[VertexpoolManager, None]:
     """Dependency to get VertexpoolManager instance with new session, also registers async trigger callables from the app state."""
     vertexpool_manager = VertexpoolManager(session_manager=session_generate)
-    vertexpool_manager.async_trigger_callables.append(
-        request.app.state.agent_updater.trigger
-    )
+    vertexpool_manager.async_trigger_callables.append(request.app.state.agent_updater.trigger)
     try:
         yield vertexpool_manager
     finally:

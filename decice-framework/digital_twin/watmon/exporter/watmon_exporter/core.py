@@ -37,19 +37,11 @@ class Exporter:
 
         self.settings: ExporterSettings = None
         self.vertexpools: list[VertexPool] = None
-        self.current_device_ids: set[int] = (
-            set()
-        )  # at every update cycle also repopulate
-        self.current_nodenames: set[str] = (
-            set()
-        )  # at every update cycle also repopulate
-        self.current_vertexpool_ids: set[int] = (
-            set()
-        )  # at every update cycle also repopulate
+        self.current_device_ids: set[int] = set()  # at every update cycle also repopulate
+        self.current_nodenames: set[str] = set()  # at every update cycle also repopulate
+        self.current_vertexpool_ids: set[int] = set()  # at every update cycle also repopulate
 
-        self.ip_to_ping_attemp_dict: dict[
-            str, PingAttempt
-        ] = {}  # maps ip addresses to PingAttempt
+        self.ip_to_ping_attemp_dict: dict[str, PingAttempt] = {}  # maps ip addresses to PingAttempt
         self.next_target: dict[int, dict] = {}  # maps vertexpool_id to target_ip list
 
         self.last_self_vertexpool_attempt = datetime.now()
@@ -160,9 +152,7 @@ class Exporter:
             if set(self.next_target[vertexpool.vertexpool_id]["target_ips"]) == set(
                 self._get_all_ips_in_vertexpool(vertexpool)
             ):
-                print(
-                    f"Targets in vertexpool {vertexpool.vertexpool_id} are not updated"
-                )
+                print(f"Targets in vertexpool {vertexpool.vertexpool_id} are not updated")
                 return
 
         self.next_target[vertexpool.vertexpool_id] = {
@@ -198,9 +188,7 @@ class Exporter:
             try:
                 if target_dict.get("target_ips"):
                     target_dict["next_target_index"] += 1
-                    target_ip = target_dict["target_ips"][
-                        target_dict["next_target_index"]
-                    ]
+                    target_ip = target_dict["target_ips"][target_dict["next_target_index"]]
             except IndexError:
                 target_dict["next_target_index"] = 0
                 target_ip = target_dict["target_ips"][target_dict["next_target_index"]]
@@ -217,9 +205,7 @@ class Exporter:
         with ThreadPoolExecutor() as pool:
             ping_func = partial(self._ping, ping_attemp.target_ip)
             success, ping_ms = await loop.run_in_executor(pool, ping_func)
-        ping_result = PingResult(
-            **ping_attemp.model_dump(), ping_success=success, ping_value_ms=ping_ms
-        )
+        ping_result = PingResult(**ping_attemp.model_dump(), ping_success=success, ping_value_ms=ping_ms)
         PING_ATTEMPS_COUNT.labels(self.nodename).inc()
         labels_dict = self._model_to_prom_labels(ping_result)
         label_values = self._labels_dict_to_ordered_label_values(labels_dict)
@@ -228,9 +214,7 @@ class Exporter:
         elif ping_result.target_type == "device":
             self.last_device_labels[ping_result.target_device_id] = label_values
         if success:
-            print(
-                f"SUCCESS: from {ping_result.target_type} {ping_result.target_name} : {ping_result.ping_value_ms} ms"
-            )
+            print(f"SUCCESS: from {ping_result.target_type} {ping_result.target_name} : {ping_result.ping_value_ms} ms")
             PING_SUCCESS_COUNT.labels(self.nodename).inc()
             PING_LATENCY.labels(**labels_dict).set(ping_result.ping_value_ms)
         else:  # TODO: Alert unreachable

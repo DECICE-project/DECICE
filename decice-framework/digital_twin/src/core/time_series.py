@@ -156,7 +156,7 @@ class DTCTimeSeries(TimeSeriesClient):
                 point.tag("vertexpool_id", node_vertexpool_id)
             points.append(point)
         return points
-    
+
     def get_cluster_info_points(self, cluster_info: dict, timestamp: datetime) -> list[Point]:
         points = []
         point = Point("cluster_info").time(timestamp)
@@ -271,7 +271,7 @@ class DTCTimeSeries(TimeSeriesClient):
             cluster_info_points: dict[dict] = cluster_info.get(timestamp, {})
             if cluster_info_points:
                 cluster_info_dict = {}
-                for key,value in cluster_info_points[0].items():
+                for key, value in cluster_info_points[0].items():
                     # value can be a number or nested json string
                     if isinstance(value, str):
                         try:

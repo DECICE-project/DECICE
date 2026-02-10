@@ -7,8 +7,12 @@ from fastapi import Depends
 from clients.digital_twin import DigitalTwinClient, get_digital_twin_client
 from config.config import get_settings
 from models.models import DeciceDigitalTwin
-from prometheus.prom_service import (CLusterInfoService, LinkService,
-                                     NodeService, VertexPoolService)
+from prometheus.prom_service import (
+    CLusterInfoService,
+    LinkService,
+    NodeService,
+    VertexPoolService,
+)
 
 logger = getLogger(__name__)
 

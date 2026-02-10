@@ -8,6 +8,7 @@ from config.config import get_settings
 API_KEY_HEADER_NAME = "X-Internal-Api-Key"
 api_key_header = APIKeyHeader(name=API_KEY_HEADER_NAME, auto_error=False)
 
+
 async def verify_internal_traffic(
     api_key_header: str = Security(api_key_header),
 ):
@@ -16,7 +17,7 @@ async def verify_internal_traffic(
     by checking the shared secret.
     """
     settings = get_settings()
-    
+
     if not api_key_header:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -29,5 +30,5 @@ async def verify_internal_traffic(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid internal authentication credentials",
         )
-    
+
     return True
