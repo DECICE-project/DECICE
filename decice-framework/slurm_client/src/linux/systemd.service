@@ -1,29 +1,26 @@
 [Unit]
 Description=FastAPI Slurm Client
-After=network.target
+After=network.target slurmctld.service
 
 [Service]
 Type=simple
-User=fastapi
-Group=fastapi
-
-# Directory containing your FastAPI code
+User=slurm
+Group=slurm
 WorkingDirectory=/opt/fastapi_app
-
-# Directly run Python main module
 ExecStart=/opt/fastapi_venv/bin/python /opt/fastapi_app/main.py
-
-Restart=on-failure
-RestartSec=5
 
 # Security Hardening
 NoNewPrivileges=yes
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
+ReadWritePaths=/etc/slurm /var/lib/slurm /var/log/slurm /opt/fastapi_app
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 MemoryMax=300M
 Environment="PYTHONUNBUFFERED=1"
+
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

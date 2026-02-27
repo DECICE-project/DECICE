@@ -16,7 +16,7 @@ COPY src/ /app/src/
 
 WORKDIR /app
 
-RUN poetry install --no-cache --no-interaction
+RUN poetry install --no-cache --no-interaction --no-root
 
 EXPOSE 8010
 
